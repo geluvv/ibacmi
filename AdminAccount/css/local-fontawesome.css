@@ -1,0 +1,49 @@
+
+/* Font Awesome 6.5.1 - Essential Icons Only */
+@font-face {
+  font-family: "Font Awesome 6 Free";
+  font-style: normal;
+  font-weight: 900;
+  font-display: block;
+  src: url("data:font/woff2;base64,d09GMgABAAAAABW0AA8AAAAAG3wAABVeAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG4c8HBwGYACEWAqjPJxrATYCJAOIOguLAAQgBYM8ByAbjREVm2/JfiQ41y1oNWysNlFE0WrDFvz/fyYTExISOyFhCTshYQm7YWEJu2FhCbthYQm7YWEJu2FhCbthYQm7YWEJuyCEJezChSXshsW/...") format("woff2");
+}
+
+.fas, .fa-solid {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+}
+
+.fas:before, .fa-solid:before {
+  font-weight: 900;
+}
+
+/* Essential icons */
+.fa-th-large:before { content: "\f009"; }
+.fa-file-alt:before { content: "\f15c"; }
+.fa-user-graduate:before { content: "\f501"; }
+.fa-user-plus:before { content: "\f234"; }
+.fa-exclamation-circle:before { content: "\f06a"; }
+.fa-clipboard-check:before { content: "\f46c"; }
+.fa-cloud-upload-alt:before { content: "\f382"; }
+.fa-inbox:before { content: "\f01c"; }
+.fa-book:before { content: "\f02d"; }
+.fa-sign-out-alt:before { content: "\f2f5"; }
+.fa-search:before { content: "\f002"; }
+.fa-check-circle:before { content: "\f058"; }
+.fa-upload:before { content: "\f093"; }
+.fa-file-export:before { content: "\f56e"; }
+.fa-file-upload:before { content: "\f574"; }
+.fa-times:before { content: "\f00d"; }
+.fa-spinner:before { content: "\f110"; }
+.fa-exclamation-triangle:before { content: "\f071"; }
+.fa-chart-line:before { content: "\f201"; }
+
+/* Spinner animation */
+.fa-spin {
+  animation: fa-spin 2s infinite linear;
+}
+
+@keyframes fa-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

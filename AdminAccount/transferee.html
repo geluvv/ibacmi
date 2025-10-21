@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBACMI - Registrar Document Online Data Bank</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.css" rel="stylesheet">
+    <link href="css/sidebar.css" rel="stylesheet">
+    <!-- ADD SWEETALERT -->
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Client-side OCR and PDF libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <link rel="stylesheet" href="../shared/form_styles.css">
+    <style>
+        /* Enhanced validation feedback styles */
+        .upload-item.validating {
+            border-color: #17a2b8 !important;
+            background-color: rgba(23, 162, 184, 0.05) !important;
+            border-style: dashed !important;
+        }
+        
+        .validation-status {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .validation-status.valid {
+            background-color: #28a745;
+        }
+        
+        .validation-status.invalid {
+            background-color: #dc3545;
+        }
+        
+        .validation-status.warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .progress {
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .file-info {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        /* Animation for validation states */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .upload-item.uploaded {
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .upload-item.invalid {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Progress indicator */
+        .validation-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #e9ecef;
+            overflow: hidden;
+        }
+
+        .validation-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #17a2b8);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* SUBMIT BUTTON - Positioned after Last Name field */
+        .submit-section {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            margin: 2rem 0 !important;
+            padding: 1.5rem 0 !important;
+            width: 100% !important;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #800000, #a00000) !important;
+            color: white !important;
+            border: none !important;
+            padding: 1rem 2.5rem !important;
+            border-radius: 25px !important;
+            font-size: 1rem !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            min-width: 200px !important;
+            box-shadow: 0 4px 15px rgba(128, 0, 0, 0.3) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #a00000, #c00000) !important;
+            transform: translateY(-2px) !important;
+            color: white !important;
+            box-shadow: 0 6px 20px rgba(128, 0, 0, 0.4) !important;
+        }
+
+        .submit-btn:active {
+            transform: translateY(0) !important;
+        }
+
+        .submit-btn i {
+            margin-right: 8px !important;
+        }
+
+        /* Add the same marriage upload logic styles as new student form */
+        .upload-item.marriage-upload.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            pointer-events: none;
+        }
+
+        .marriage-required-container {
+            pointer-events: auto !important;
+        }
+
+        /* Fixed upload grid dimensions for transferee */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            flex: 1;
+            align-content: start;
+            min-height: 500px; /* Slightly taller for more documents */
+        }
+
+        .upload-item {
+            height: 140px; /* Fixed height */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .file-info {
+            position: absolute;
+            bottom: 0.5rem;
+            left: 0.5rem;
+            right: 0.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 6px;
+            padding: 0.25rem;
+            font-size: 0.7rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            max-height: 60px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .upload-item.uploaded .file-info {
+            display: block;
+        }
+
+        /* SweetAlert2 custom width for warning messages */
+        .swal-wide {
+            width: 600px !important;
+        }
+
+        .swal2-html-container ul {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <nav class="sidebar">
+            <div class="brand-container d-flex align-items-center">
+                <img src="../photos/IBAlogo.png" alt="IBACMI Logo" class="me-3">
+                <div class="brand-text">
+                    <h5 class="mb-0 fw-bold">IBACMI</h5>
+                    <span class="text-muted fs-6">Registrar Document Online Data Bank</span>
+                </div>
+            </div>
+            
+            <div class="menu-bar mt-4">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php">
+                            <i class="fas fa-th-large"></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="Document.php">
+                            <i class="fas fa-file-alt"></i>
+                            <span class="nav-text">Student Records</span>
+                        </a>
+                    </li>
+                    <li class="nav-item active position-relative">
+                        <a class="nav-link" href="#">
+                            <div class="nav-link-content">
+                                <i class="fas fa-user-graduate"></i>
+                                <span class="nav-text">Student Management</span>
+                            </div>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </a>
+                        <ul class="nav flex-column submenu" style="display: block;">
+                            <li class="nav-item">
+                                <a class="nav-link" href="newstudent.html">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span class="nav-text">New Student</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="transferee.html">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span class="nav-text">Transferee</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lackingofdoc.php">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span class="nav-text">Lacking Documents</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="completedoc.php">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span class="nav-text">Complete Documents</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="backup.html">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span class="nav-text">Backup</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="userrequest.html">
+                            <i class="fas fa-inbox"></i>
+                            <span class="nav-text">User Request</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="bottom-content mt-auto">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="usersmanual.html">
+                            <i class="fas fa-book"></i>
+                            <span class="nav-text">User Manual</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="landingpage.html">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="nav-text">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="main-content" style="margin-left: 280px;">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2><i class="fas fa-user-plus me-2"></i>Add Transferee Student</h2>
+                    <p class="mb-0">Complete the form below to register a transferee student</p>
+                </div>
+
+                <!-- IMPORTANT: Make sure the form has these exact attributes -->
+                <form id="transfereeForm" action="transferee.php" method="POST" enctype="multipart/form-data" onsubmit="return false;">
+                    <div class="form-body">
+                        <div class="form-content">
+                            <!-- Student Information Section -->
+                            <div class="section-card">
+                                <div class="section-title">
+                                    <div class="section-icon">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <h3>Student Information</h3>
+                                </div>
+
+                                <!-- Student ID - Full width -->
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        Student ID <span class="required-indicator">*</span>
+                                    </label>
+                                    <input type="text" name="studentID" class="form-control" placeholder="Enter student ID" required>
+                                </div>
+
+                                <!-- Course and Year Level - Two columns -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            Course <span class="required-indicator">*</span>
+                                        </label>
+                                        <select name="studentCourse" class="form-select" required>
+                                            <option value="">Select course</option>
+                                            <option value="BSIT">BSIT</option>
+                                            <option value="BSCRIM">BSCRIM</option>
+                                            <option value="BEED">BEED</option>
+                                            <option value="BECED">BECED</option>
+                                            <option value="BPA">BPA</option>
+                                            <option value="BSE">BSE</option>
+                                            <option value="BSHM">BSHM</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            Year Level <span class="required-indicator">*</span>
+                                        </label>
+                                        <select name="yearLevel" class="form-select" required>
+                                            <option value="">Select year</option>
+                                            <option value="1">1st Year</option>
+                                            <option value="2">2nd Year</option>
+                                            <option value="3">3rd Year</option>
+                                            <option value="4">4th Year</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- First Name - Full width -->
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        First Name <span class="required-indicator">*</span>
+                                    </label>
+                                    <input type="text" name="firstName" class="form-control" placeholder="Enter first name" required>
+                                </div>
+
+                                <!-- Middle Name - Full width -->
+                                <div class="form-group">
+                                    <label class="form-label">Middle Name</label>
+                                    <input type="text" name="middleName" class="form-control" placeholder="Enter middle name (optional)">
+                                </div>
+
+                                <!-- Last Name - Full width -->
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        Last Name <span class="required-indicator">*</span>
+                                    </label>
+                                    <input type="text" name="lastName" class="form-control" placeholder="Enter last name" required>
+                                </div>
+
+                                <!-- SUBMIT BUTTON - Positioned right after Last Name field -->
+                                <div class="submit-section">
+                                    <button type="submit" form="transfereeForm" class="submit-btn" id="submitBtn">
+                                        <i class="fas fa-paper-plane"></i>
+                                        Submit Transferee
+                                    </button>
+                                </div>
+
+                            </div>
+
+                            <!-- Documents Section -->
+                            <div class="section-card">
+                                <div class="section-title">
+                                    <div class="section-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <h3>Required Documents</h3>
+                                    <p class="section-description">Upload all required documents. Files will be validated instantly.</p>
+                                </div>
+
+                                <div class="upload-section">
+                                    <div class="upload-grid">
+                                        <!-- Good Moral -->
+                                        <div class="upload-item" data-doc-type="moral" data-required="true">
+                                            <input type="file" name="moralCert" accept=".pdf,.docx,.jpg,.jpeg,.png" style="display: none;">
+                                            <div class="upload-title">Good Moral</div>
+                                            <div class="upload-icon"><i class="fas fa-star"></i></div>
+                                            <div class="upload-text">Click to upload</div>
+                                            <div class="file-info"></div>
+                                            <div class="validation-progress" style="display: none;">
+                                                <div class="validation-progress-bar"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Birth Certificate -->
+                                        <div class="upload-item" data-doc-type="birth" data-required="true">
+                                            <input type="file" name="birthCert" accept=".pdf,.docx,.jpg,.jpeg,.png" style="display: none;">
+                                            <div class="upload-title">Birth Certificate</div>
+                                            <div class="upload-icon"><i class="fas fa-id-card"></i></div>
+                                            <div class="upload-text">Click to upload</div>
+                                            <div class="file-info"></div>
+                                            <div class="validation-progress" style="display: none;">
+                                                <div class="validation-progress-bar"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Marriage Certificate (Optional) -->
+                                        <div class="upload-item optional-doc marriage-upload disabled" data-doc-type="marriage" data-required="false">
+                                            <input type="file" name="marriageCert" accept=".pdf,.docx,.jpg,.jpeg,.png" style="display: none;" disabled>
+                                            <div class="marriage-required-container" style="position: absolute; top: 8px; right: 8px; z-index: 10;">
+                                                <input type="checkbox" name="marriageRequired" id="marriageRequiredTransferee" value="1" style="margin-right: 5px;">
+                                                <label for="marriageRequiredTransferee" style="font-size: 0.8rem; color: #666;">Required</label>
+                                            </div>
+                                            <div class="upload-title">Marriage Certificate</div>
+                                            <div class="upload-icon"><i class="fas fa-heart"></i></div>
+                                            <div class="upload-text">Check "Required" to enable upload</div>
+                                            <div class="file-info"></div>
+                                            <div class="validation-progress" style="display: none;">
+                                                <div class="validation-progress-bar"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Transcript of Records -->
+                                        <div class="upload-item" data-doc-type="tor" data-required="true">
+                                            <input type="file" name="tor" accept=".pdf,.docx,.jpg,.jpeg,.png" style="display: none;">
+                                            <div class="upload-title">Transcript of Records</div>
+                                            <div class="upload-icon"><i class="fas fa-file-alt"></i></div>
+                                            <div class="upload-text">Click to upload</div>
+                                            <div class="file-info"></div>
+                                            <div class="validation-progress" style="display: none;">
+                                                <div class="validation-progress-bar"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Honorable Dismissal -->
+                                        <div class="upload-item" data-doc-type="honorable" data-required="true">
+                                            <input type="file" name="honorable" accept=".pdf,.docx,.jpg,.jpeg,.png" style="display: none;">
+                                            <div class="upload-title">Honorable Dismissal</div>
+                                            <div class="upload-icon"><i class="fas fa-certificate"></i></div>
+                                            <div class="upload-text">Click to upload</div>
+                                            <div class="file-info"></div>
+                                            <div class="validation-progress" style="display: none;">
+                                                <div class="validation-progress-bar"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Grade Slip -->
+                                        <div class="upload-item" data-doc-type="gradeslip" data-required="true">
+                                            <input type="file" name="gradeSlip" accept=".pdf,.docx,.jpg,.jpeg,.png" style="display: none;">
+                                            <div class="upload-title">Grade Slip</div>
+                                            <div class="upload-icon"><i class="fas fa-file-text"></i></div>
+                                            <div class="upload-text">Click to upload</div>
+                                            <div class="file-info"></div>
+                                            <div class="validation-progress" style="display: none;">
+                                                <div class="validation-progress-bar"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 2x2 Picture - ONLY ONE -->
+                                        <div class="upload-item photo-upload" data-doc-type="id" data-required="true">
+                                            <input type="file" name="idPhoto" accept=".jpg,.jpeg,.png" style="display: none;">
+                                            <div class="upload-title">2x2 Picture</div>
+                                            <div class="upload-icon"><i class="fas fa-camera"></i></div>
+                                            <div class="upload-text">Click to upload photo</div>
+                                            <div class="file-info"></div>
+                                            <div class="validation-progress" style="display: none;">
+                                                <div class="validation-progress-bar"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </div> <!-- END OF FORM-CONTAINER -->
+        </div>
+    </div>
+
+    <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sidebar-notifications.js"></script>
+    <script src="js/transferee.js"></script>
+</body>
+</html>

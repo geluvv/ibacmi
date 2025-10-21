@@ -1,0 +1,16 @@
+vendor/
+composer.lock
+client_secret.json
+
+# Google OAuth Configuration Files
+config/google_drive_config.php
+config/google_drive_token.json
+classes/GoogleDriveConfig.php
+
+# Log files with sensitive data
+AdminAccount/backup_errors.log
+*.log
+
+# Environment files
+.env
+.env.local

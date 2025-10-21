@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBACMI Registrar Document Online Data Bank</title>
+     <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary: #8B0000;
+            --primary-dark: #5D0000;
+            --secondary: #232323;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --accent: #FFD700;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+        
+        .navbar {
+            background-color: rgba(139, 0, 0, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+        }
+        
+        .hero {
+            position: relative;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgcGF0dGVyblRyYW5zZm9ybT0icm90YXRlKDEzNSkiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSI+PC9yZWN0PjwvcGF0dGVybj48L2RlZnM+PHJlY3QgZmlsbD0idHJhbnNwYXJlbnQiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjwvcmVjdD48cmVjdCBmaWxsPSJ1cmwoI3BhdHRlcm4pIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj48L3JlY3Q+PC9zdmc+') repeat;
+            opacity: 0.6;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #fff, rgba(255, 215, 0, 0.8));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+        }
+        
+        .hero-btn {
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            background: none;
+            color: var(--primary-dark);
+            cursor: pointer;
+            position: relative;
+            padding: 8px;
+            margin: 0 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all .15s ease;
+        }
+
+        .hero-btn::before,
+        .hero-btn::after {
+            content: '';
+            display: block;
+            position: absolute;
+            right: 0;
+            left: 0;
+            height: calc(50% - 5px);
+            border: 1px solid var(--primary);
+            transition: all .15s ease;
+        }
+
+        .hero-btn::before {
+            top: 0;
+            border-bottom-width: 0;
+        }
+
+        .hero-btn::after {
+            bottom: 0;
+            border-top-width: 0;
+        }
+
+        .hero-btn:active,
+        .hero-btn:focus {
+            outline: none;
+        }
+
+        .hero-btn:active::before,
+        .hero-btn:active::after {
+            right: 3px;
+            left: 3px;
+        }
+
+        .hero-btn:active::before {
+            top: 3px;
+        }
+
+        .hero-btn:active::after {
+            bottom: 3px;
+        }
+
+        .hero-btn_lg {
+            position: relative;
+            display: block;
+            padding: 10px 20px;
+            color: #fff;
+            background-color: var(--primary);
+            overflow: hidden;
+            box-shadow: inset 0px 0px 0px 1px transparent;
+        }
+
+        .hero-btn_lg::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 2px;
+            background-color: var(--primary);
+        }
+
+        .hero-btn_lg::after {
+            content: '';
+            display: block;
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 4px;
+            height: 4px;
+            background-color: var(--primary);
+            transition: all .2s ease;
+        }
+
+        .hero-btn_sl {
+            display: block;
+            position: absolute;
+            top: 0;
+            bottom: -1px;
+            left: -8px;
+            width: 0;
+            background-color: var(--accent);
+            transform: skew(-15deg);
+            transition: all .2s ease;
+        }
+
+        .hero-btn_text {
+            position: relative;
+        }
+
+        .hero-btn:hover {
+            color: var(--primary-dark);
+        }
+
+        .hero-btn:hover .hero-btn_sl {
+            width: calc(100% + 15px);
+        }
+
+        .hero-btn:hover .hero-btn_lg::after {
+            background-color: #fff;
+        }
+
+        .hero-btn-outline {
+            color: white;
+        }
+
+        .hero-btn-outline .hero-btn_lg {
+            background-color: transparent;
+            border: 1px solid white;
+        }
+
+        .hero-btn-outline .hero-btn_lg::before,
+        .hero-btn-outline .hero-btn_lg::after {
+            background-color: white;
+        }
+
+        .hero-btn-outline .hero-btn_sl {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-btn-outline:hover {
+            color: white;
+        }
+        
+        .feature-card {
+            border-radius: 16px;
+            padding: 2.5rem;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: none;
+            height: 100%;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--primary);
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 0.4s ease;
+        }
+        
+        .feature-card:hover::before {
+            transform: scaleY(1);
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: rgba(139, 0, 0, 0.1);
+            color: var(--primary);
+            border-radius: 50%;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover .feature-icon {
+            background: var(--primary);
+            color: white;
+            transform: rotateY(360deg);
+            transition: all 0.7s ease;
+        }
+        
+        .feature-card h3 {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .feature-card p {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        .updates-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+        }
+        
+        .update-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 1.25rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .update-item:hover {
+            background: rgba(139, 0, 0, 0.05);
+            border-left: 3px solid var(--primary);
+        }
+        
+        .update-icon {
+            margin-right: 1rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+        }
+        
+        .update-content h5 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .update-date {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+        
+        .modal-content {
+            border-radius: 16px;
+            overflow: hidden;
+            border: none;
+        }
+        
+        .modal-header {
+            background: var(--primary);
+            color: white;
+            padding: 1.5rem;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .modal-feature {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .modal-feature i {
+            color: var(--primary);
+            margin-right: 0.75rem;
+        }
+        
+        footer {
+            background: var(--secondary);
+            color: white;
+            padding: 3rem 0 1.5rem 0;
+        }
+        
+        .footer-links h5 {
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            font-size: 1.1rem;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            background: var(--accent);
+            color: var(--primary-dark);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+        
+        /* Animation utilities */
+        .fade-in {
+            animation: fadeIn 1.5s ease-in forwards;
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 1s ease-out forwards;
+        }
+        
+        .fade-in-up-delayed {
+            opacity: 0;
+            animation: fadeInUp 1s ease-out forwards;
+            animation-delay: 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 2.75rem;
+            }
+            .feature-card {
+                padding: 1.75rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.25rem;
+            }
+            .hero-btns {
+                flex-direction: column;
+            }
+            .hero-btn-outline {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+        }
+
+        /* Add these new styles for the dropdown */
+    .dropdown-menu {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        padding: 0.5rem 0;
+        margin-top: 0.5rem;
+        min-width: 200px;
+    }
+    
+    .dropdown-item {
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        color: var(--dark);
+        transition: all 0.3s ease;
+    }
+    
+    .dropdown-item:hover {
+        background: var(--primary);
+        color: white;
+        padding-left: 2rem;
+    }
+    
+    .dropdown-toggle::after {
+        margin-left: 0.5rem;
+        vertical-align: middle;
+    }
+    
+    /* Ensure dropdown works on mobile */
+    @media (max-width: 991px) {
+        .dropdown-menu {
+            position: static !important;
+            transform: none !important;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+    }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="../photos/IBAlogo.png" alt="IBACMI Logo" width="40" height="40" class="me-2">
+                <span>IBACMI Registrar Document Online Data Bank</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#updates">Updates</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">About</a>
+                    </li>
+                    <li class="nav-item dropdown ms-lg-3">
+                        <a class="btn btn-sm btn-outline-light rounded-pill py-2 px-4 dropdown-toggle" href="#" role="button" id="loginDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Login
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="loginDropdown">
+                            <li><a class="dropdown-item" href="../StaffAccount/stafflogin.html">Login as Staff</a></li>
+                            <li><a class="dropdown-item" href="login.html">Login as Admin</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container text-center hero-content">
+            <h1 class="fade-in">Transforming Document Workflows</h1>
+            <p class="text-white mb-4 fade-in-up">A secure, intuitive platform for storing, organizing, and retrieving your important institutional documents with ease.</p>
+            <div class="d-flex justify-content-center hero-btns fade-in-up-delayed">
+                <a href="#features" class="hero-btn">
+                    <span class="hero-btn_lg">
+                        <span class="hero-btn_sl"></span>
+                        <span class="hero-btn_text">Explore Features</span>
+                    </span>
+                </a>
+                <a href="login.html" class="hero-btn hero-btn-outline">
+                    <span class="hero-btn_lg">
+                        <span class="hero-btn_sl"></span>
+                        <span class="hero-btn_text">Get Started</span>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5 mt-5" id="features">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h6 class="text-uppercase fw-bold" style="color: var(--primary);">Why Choose Us</h6>
+                <h2 class="fw-bold mb-3">Powerful Features for Document Management</h2>
+                <p class="text-muted mx-auto" style="max-width: 600px;">Our state-of-the-art system offers everything you need to manage your important documents securely and efficiently.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Enhanced Security</h3>
+                        <p>Military-grade encryption protects your sensitive documents with multi-factor authentication and role-based access control.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Cloud Accessibility</h3>
+                        <p>Access your documents anytime, anywhere on any device with our responsive cloud-based platform.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>Intelligent Search</h3>
+                        <p>Powerful search capabilities let you find any document in seconds using keywords, tags, or metadata.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <h3>Version Control</h3>
+                        <p>Track document changes with comprehensive versioning that lets you revert to previous versions whenever needed.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3>Analytics Dashboard</h3>
+                        <p>Gain insights into document usage patterns with detailed analytics and custom reports.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h3>Smart Notifications</h3>
+                        <p>Stay informed with customizable alerts for document updates, reviews, and workflow changes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Updates Section -->
+    <section class="py-5 bg-light" id="updates">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="updates-section">
+                        <h3 class="fw-bold mb-4">Latest Updates</h3>
+                        
+                        <div class="update-item">
+                            <div class="update-icon">
+                                <i class="fas fa-folder-tree"></i>
+                            </div>
+                            <div class="update-content">
+                                <h5>Advanced Document Categorization</h5>
+                                <p>Our new AI-powered categorization system automatically organizes your files for easier retrieval.</p>
+                                <div class="update-date">March 2, 2025</div>
+                            </div>
+                        </div>
+                        
+                        <div class="update-item">
+                            <div class="update-icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <div class="update-content">
+                                <h5>System Maintenance Schedule</h5>
+                                <p>Planned maintenance will occur on March 15, 2025. Minimal disruption expected.</p>
+                                <div class="update-date">February 28, 2025</div>
+                            </div>
+                        </div>
+                        
+                        <div class="update-item">
+                            <div class="update-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="update-content">
+                                <h5>Instant Report Generation</h5>
+                                <p>Generate comprehensive document reports instantly with our new customizable templates.</p>
+                                <div class="update-date">February 20, 2025</div>
+                            </div>
+                        </div>
+                        
+                        <div class="update-item">
+                            <div class="update-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="update-content">
+                                <h5>Mobile App Launched</h5>
+                                <p>Our new mobile application is now available for download on iOS and Android platforms.</p>
+                                <div class="update-date">February 15, 2025</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- About Modal -->
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aboutModalLabel">About IBACMI Document Data Bank</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="lead">The IBACMI Registrar Document Online Data Bank is a comprehensive solution designed to transform how educational institutions manage and access critical documents.</p>
+                    
+                    <div class="mt-4">
+                        <h5 class="fw-bold">Our Mission</h5>
+                        <p>To provide a secure, accessible, and efficient platform for document management that meets the evolving needs of educational institutions in the digital age.</p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5 class="fw-bold">Key Features</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="modal-feature">
+                                    <i class="fas fa-lock"></i>
+                                    <span>End-to-end encryption</span>
+                                </div>
+                                <div class="modal-feature">
+                                    <i class="fas fa-cloud"></i>
+                                    <span>Cloud-based access</span>
+                                </div>
+                                <div class="modal-feature">
+                                    <i class="fas fa-folder-open"></i>
+                                    <span>Intuitive organization system</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="modal-feature">
+                                    <i class="fas fa-database"></i>
+                                    <span>Comprehensive backup protocols</span>
+                                </div>
+                                <div class="modal-feature">
+                                    <i class="fas fa-users-cog"></i>
+                                    <span>Role-based access control</span>
+                                </div>
+                                <div class="modal-feature">
+                                    <i class="fas fa-history"></i>
+                                    <span>Document versioning</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5 class="fw-bold">Contact Information</h5>
+                        <p>For technical support or general inquiries:</p>
+                        <p><i class="fas fa-envelope me-2" style="color: var(--primary);"></i> support@ibacmi.edu<br>
+                        <i class="fas fa-phone-alt me-2" style="color: var(--primary);"></i> (555) 123-4567</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" style="background-color: var(--primary); border: none;">Contact Support</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <img src="../photos/IBAlogo.png" alt="IBACMI Logo" width="50" height="50" class="mb-3">
+                    <h4 class="text-white mb-3">IBACMI Document Data Bank</h4>
+                    <p class="text-muted">Providing innovative document management solutions for educational institutions since 2020.</p>
+                    <div class="social-links mt-3">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4 mb-md-0">
+                    <div class="footer-links">
+                        <h5>Quick Links</h5>
+                        <ul>
+                            <li><a href="#">Home</a></li>
+                            <li><a href="#">Features</a></li>
+                            <li><a href="#">Updates</a></li>
+                            <li><a href="#">About</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                    <div class="footer-links">
+                        <h5>Resources</h5>
+                        <ul>
+                            <li><a href="#">Documentation</a></li>
+                            <li><a href="#">FAQs</a></li>
+                            <li><a href="#">User Guides</a></li>
+                            <li><a href="#">Video Tutorials</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="footer-links">
+                        <h5>Contact</h5>
+                        <ul>
+                            <li><a href="mailto:support@ibacmi.edu">support@ibacmi.edu</a></li>
+                            <li><a href="tel:+15551234567">(555) 123-4567</a></li>
+                            <li><a href="#">123 Campus Drive, Suite 456</a></li>
+                            <li><a href="#">Anytown, ST 12345</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 IBACMI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

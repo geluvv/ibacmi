@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Boxicons for icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .btn-maroon {
+            background-color: #800000;
+            color: white;
+        }
+        .btn-maroon:hover {
+            background-color: #800000;
+            color: white;
+        }
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: rgba(240, 247, 249, 0.87);
+            color: black;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .nav-link {
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            background-color: #800000;
+            color: white !important;
+        }
+        .submenu {
+            display: none;
+            padding-left: 20px;
+        }
+        .nav-item:hover .submenu {
+            display: block;
+        }
+        .card {
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .activity-log {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+        .activity-log h5 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #800000; 
+        }
+        .log-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .log-item:hover {
+            background-color: #f1f1f1;
+            transform: scale(1.02);
+        }
+        .log-item .log-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .log-item .log-header strong {
+            color: #800000;
+        }
+        .log-item .log-header .timestamp {
+            color: #888;
+            font-size: 0.875rem;
+        }
+        .log-item .log-description {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid d-flex">
+        <nav class="sidebar p-3">
+            <header>
+                <div class="d-flex align-items-center mb-4">
+                    <img src="photos/IBAlogo.png" alt="logo" class="me-2" style="width: 40px;">
+                    <div>
+                        <h5 class="mb-0">IBACMI</h5>
+                        <span>Registrar Document Online Data Bank</span>
+                    </div>
+                </div>
+            </header>
+            <div class="menu-bar">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="document.html"><i class='bx bx-folder'></i>Student Records</a></li>
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="#"><i class='bx bx-user'></i> Student Management</a>
+                        <ul class="nav flex-column submenu">
+                            <li class="nav-item"><a class="nav-link" href="newstudent.html">➕ New Student</a></li>
+                            <li class="nav-item"><a class="nav-link" href="transferee.html">➕ Transferee</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="lackingofdoc.html"><i class='bx bx-file-find'></i> Lacking Document</a></li>
+                    <li class="nav-item"><a class="nav-link" href="usersguide.html"><i class='bx bx-help-circle'></i>Users Guide</a></li>
+                </ul>
+            </div>
+            <div class="bottom-content mt-auto">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="landingpage.html"><i class='bx bx-log-out'></i> Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <h2>Student Information</h2>
+            <p>Manage student records and add new students easily.</p>
+            
+            <!-- Add Student Button -->
+            <button class="btn btn-maroon mb-3" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                <i class='bx bx-user-plus'></i> Add Student
+            </button>
+
+    <!-- Add Student Modal -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header" style="background-color: #800000; color: white;">
+                    <h5 class="modal-title" id="addStudentModalLabel">Add Student</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form>
+                        <div class="mb-3">
+                            <label for="studentID" class="form-label">Student ID</label>
+                            <input type="text" class="form-control" id="studentID" placeholder="Enter ID">
+                        </div>
+                        <div class="mb-3">
+                            <label for="studentName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="studentName" placeholder="Enter Last name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="studentName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="studentName" placeholder="Enter First name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="studentName" class="form-label">Middle Name</label>
+                            <input type="text" class="form-control" id="studentName" placeholder="Enter Middle name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="studentCourse" class="form-label">Course</label>
+                            <select class="form-select" id="studentCourse">
+                                <option value="" disabled selected>Select course</option>
+                                <option value="BSIT">BSIT</option>
+                                <option value="BSCRIM">BSCRIM</option>
+                                <option value="BEED">BEED</option>
+                                <option value="BECED">BECED</option>
+                                <option value="BPA">BPA</option>
+                                <option value="BSE">BSE</option>
+                                <option value="BSHM">BSHM</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Checkbox Section -->
+                        <div class="mb-3">
+                            <label class="form-label">Required Documents:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="psaCheckbox">
+                                <label class="form-check-label" for="psaCheckbox">PSA</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="form138Checkbox">
+                                <label class="form-check-label" for="form138Checkbox">Form 138A</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="goodMoralCheckbox">
+                                <label class="form-check-label" for="goodMoralCheckbox">Good Moral and Character</label>
+                            </div>
+                        </div>
+    
+                        <div class="mb-3">
+                            <label for="studentDocument" class="form-label">Upload Document</label>
+                            <input type="file" class="form-control" id="studentDocument">
+                        </div>
+    
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn" style="background-color: #800000; color: white;">Add Student</button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+    
+
+                    
+
+
+
+    <!-- JavaScript to Highlight Active Page -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let currentLocation = window.location.pathname.split("/").pop(); 
+            let navLinks = document.querySelectorAll(".nav-link");
+
+            navLinks.forEach(link => {
+                if (link.getAttribute("href") === currentLocation) {
+                    link.classList.add("active");
+                }
+            });
+        });
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

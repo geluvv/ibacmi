@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IBACMI Registrar Document Online Data Bank</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+     <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #8E1616;
+            --primary-light: #AF3030;
+            --primary-dark: #700D0D;
+            --secondary-color: #FFD7D7;
+            --accent-color: #FFB6B6;
+            --text-color: #555555;
+            --light-text: #888888;
+            --bg-color: #8E1616;
+            --card-bg: #FFFFFF;
+            --border-radius: 20px;
+            --input-radius: 15px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.25s ease;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: var(--bg-color);
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            padding: 20px;
+            background-image: radial-gradient(circle at 10% 20%, rgba(200, 50, 50, 0.15) 0%, rgba(142, 22, 22, 0.05) 80%);
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .login {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 28px;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .login::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 3px;
+            background: var(--accent-color);
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 10px;
+        }
+
+        .card {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 900px;
+            width: 100%;
+            flex-direction: column;
+            gap: 15px;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+            padding: 35px 25px;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 100px;
+            height: 100px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            width: 80px;
+            height: 80px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .inputBox {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 20px;
+        }
+
+        .inputBox input {
+            width: 100%;
+            padding: 15px 45px 15px 20px;
+            border: 2px solid #EEEEEE;
+            color: var(--text-color);
+            font-size: 15px;
+            background: #F9F9F9;
+            border-radius: var(--input-radius);
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .inputBox i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-text);
+            font-size: 16px;
+        }
+
+        .inputBox span {
+            position: absolute;
+            left: 20px;
+            top: 15px;
+            pointer-events: none;
+            font-size: 14px;
+            color: var(--light-text);
+            transition: 0.3s;
+        }
+
+        .inputBox input:valid ~ span,
+        .inputBox input:focus ~ span {
+            transform: translateY(-25px);
+            font-size: 12px;
+            color: var(--primary-color);
+            background: var(--card-bg);
+            padding: 0 8px;
+            font-weight: 500;
+        }
+
+        .inputBox input:valid,
+        .inputBox input:focus {
+            border: 2px solid var(--primary-color);
+            background: #FFFFFF;
+        }
+
+        .inputBox input:valid ~ i,
+        .inputBox input:focus ~ i {
+            color: var(--primary-color);
+        }
+
+        .enter {
+            height: 50px;
+            width: 180px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            margin: 20px 0;
+            font-weight: 600;
+            box-shadow: 0 10px 20px rgba(142, 22, 22, 0.2);
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .enter:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(142, 22, 22, 0.3);
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--primary-color) 100%);
+        }
+
+        .logo {
+            width: 90px;
+            height: 90px;
+            margin-bottom: 15px;
+            object-fit: contain;
+            background: rgba(142, 22, 22, 0.1);
+            padding: 15px;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(142, 22, 22, 0.15);
+        }
+
+        .footer-options {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 620px;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .links label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--light-text);
+            font-size: 13px;
+        }
+
+        .links input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .register {
+            text-align: center;
+            font-size: 15px;
+            color: var(--light-text);
+        }
+
+        .register a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register a:hover {
+            text-decoration: underline;
+        }
+
+        .staff-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 10px 0;
+            padding: 12px 20px;
+            background: var(--secondary-color);
+            border-radius: 15px;
+            color: var(--primary-color);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .staff-info i {
+            font-size: 16px;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            position: relative;
+        }
+        
+        .error-message {
+            color: #E53935;
+            font-size: 14px;
+            margin: 8px 0;
+            text-align: center;
+            display: none;
+            background-color: #FFEBEE;
+            padding: 10px 15px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 620px;
+            font-weight: 500;
+            border-left: 4px solid #E53935;
+        }
+
+        /* Floating elements */
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .circle1 {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.05);
+            top: 20%;
+            right: 15%;
+            animation: float 8s infinite alternate;
+        }
+        
+        .circle2 {
+            width: 30px;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.05);
+            bottom: 15%;
+            left: 10%;
+            animation: float 6s infinite alternate-reverse;
+        }
+        
+        .circle3 {
+            width: 25px;
+            height: 25px;
+            background-color: rgba(255, 255, 255, 0.05);
+            top: 30%;
+            left: 20%;
+            animation: float 10s infinite alternate;
+        }
+
+        /* Maroon stars pattern */
+        .star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                transform: translateY(20px) rotate(10deg);
+            }
+        }
+
+        .custom-file-label {
+            display: inline-flex;
+            align-items: center;
+            background: #f9f9f9;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            margin-bottom: 5px;
+        }
+        .custom-file-label:hover {
+            background: var(--primary-color);
+            color: #fff;
+        }
+        .custom-file-label i {
+            font-size: 18px;
+        }
+
+        .inputBox .file-input-container {
+            width: 100%;
+            padding: 15px 45px 15px 20px;
+            border: 2px solid #EEEEEE;
+            color: var(--light-text);
+            font-size: 15px;
+            background: #F9F9F9;
+            border-radius: var(--input-radius);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inputBox:hover .file-input-container {
+            border-color: var(--primary-color);
+            background: #FFFFFF;
+        }
+
+        .inputBox:hover .file-input-container i {
+            color: var(--primary-color);
+        }
+
+        .inputBox .file-input-container i {
+            color: var(--light-text);
+            font-size: 16px;
+            position: static;
+            transform: none;
+        }
+
+        #file-chosen {
+            font-size: 14px;
+        }
+
+        /* Verification Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-content h3 {
+            color: #8E1616;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .verification-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 24px;
+            text-align: center;
+            letter-spacing: 10px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .verification-input:focus {
+            border-color: #8E1616;
+            outline: none;
+            box-shadow: 0 0 10px rgba(142, 22, 22, 0.2);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-buttons button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-verify {
+            background: linear-gradient(135deg, #8E1616, #6b1111);
+            color: white;
+        }
+
+        .btn-verify:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(142, 22, 22, 0.3);
+        }
+
+        .btn-verify:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-resend {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-resend:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-resend:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .timer {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        /* FIXED LOGO STYLES */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .logo-circle {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #8E1616, #6b1111);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 auto 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-circle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120%;
+            height: 120%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            animation: logoAnim 1.2s ease-out forwards;
+        }
+
+        @keyframes logoAnim {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* BACK TO HOME BUTTON */
+        .back-to-home {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            text-decoration: none;
+        }
+
+        .back-to-home:hover {
+            transform: translateX(-5px) scale(1.1);
+            box-shadow: 0 6px 20px rgba(142, 22, 22, 0.3);
+        }
+
+        .back-to-home i {
+            color: var(--primary-color);
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-home:hover i {
+            color: var(--primary-dark);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .card {
+                padding: 25px 15px;
+                max-width: 95%;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                align-items: center;
+                gap: 0;
+            }
+            
+            .footer-options {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .back-to-home {
+                top: 15px;
+                left: 15px;
+                width: 45px;
+                height: 45px;
+            }
+            
+            .back-to-home i {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .modal-content {
+                padding: 30px 20px;
+                width: 95%;
+            }
+            
+            .verification-input {
+                font-size: 20px;
+                letter-spacing: 5px;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+            
+            .modal-buttons button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- BACK TO HOME BUTTON -->
+    <a href="../index.html" class="back-to-home" title="Back to Home">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <div class="floating-element circle1"></div>
+    <div class="floating-element circle2"></div>
+    <div class="floating-element circle3"></div>
+    
+    <div class="container">
+        <div class="card">
+            <!-- FIXED LOGO -->
+            <div class="logo-container">
+                <div class="logo-circle">IBA</div>
+            </div>
+            
+            <a class="login">Staff Register Form</a>
+            <p>Create your staff account</p>
+            <div id="error-message" class="error-message"></div>
+            <form id="registrationForm" action="staffregister.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="register" value="true">
+                <input type="hidden" name="role" value="staff">
+                <div class="form-row">
+                    <div class="inputBox">
+                        <input type="text" name="first_name" required="required">
+                        <span>First Name</span>
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="inputBox">
+                        <input type="text" name="middle_name">
+                        <span>Middle Name</span>
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="inputBox">
+                        <input type="text" name="last_name" required="required">
+                        <span>Last Name</span>
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="inputBox">
+                        <input type="email" name="email" required="required">
+                        <span>Email</span>
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="inputBox">
+                        <input type="text" name="username" required="required">
+                        <span>Username</span>
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="inputBox">
+                        <input type="password" name="password" required="required">
+                        <span>Password</span>
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="inputBox">
+                        <input type="password" name="confirm_password" required="required">
+                        <span>Confirm Password</span>
+                        <i class="fas fa-lock"></i>
+                    </div>
+                </div>
+                <!-- ID Upload Field -->
+                <div class="form-row">
+                    <div class="inputBox">
+                        <input type="file" id="id_document" name="id_document" accept=".jpg,.jpeg,.png,.pdf" required="required" style="opacity: 0; position: absolute;">
+                        <div class="file-input-container">
+                            <span id="file-chosen">Upload Valid School/Employee ID</span>
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="staff-info">
+                    <i class="fas fa-users"></i>
+                    <span>Registering as Staff Member</span>
+                </div>
+                <div class="footer-options">
+                    <div class="links">
+                        <label>
+                            <input type="checkbox" name="terms" required> I agree to the Terms and Conditions
+                        </label>
+                    </div>
+                    <div class="register">
+                        Already have an account? <a href="stafflogin.html">Login</a>
+                    </div>
+                </div>
+                <button type="submit" class="enter">Register</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Verification Modal -->
+    <div id="verificationModal" class="modal">
+        <div class="modal-content">
+            <h3>Email Verification</h3>
+            <p>We've sent a 6-digit verification code to your email address.</p>
+            <p>Please enter the code below:</p>
+            
+            <input type="text" id="verificationCode" class="verification-input" maxlength="6" placeholder="000000" autocomplete="off">
+            
+            <div class="modal-buttons">
+                <button type="button" class="btn-verify" onclick="verifyCode()">Verify Code</button>
+                <button type="button" class="btn-resend" onclick="resendCode()">Resend Code</button>
+            </div>
+            
+            <div id="timer" class="timer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Add stars to the background
+        function createStars() {
+            const body = document.body;
+            const starCount = 50;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Random positioning
+                const x = Math.floor(Math.random() * window.innerWidth);
+                const y = Math.floor(Math.random() * window.innerHeight);
+                
+                star.style.left = `${x}px`;
+                star.style.top = `${y}px`;
+                
+                // Random size (1-3px)
+                const size = 1 + Math.random() * 2;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                // Random opacity
+                star.style.opacity = 0.1 + Math.random() * 0.5;
+                
+                body.appendChild(star);
+            }
+        }
+        
+        // Call the function when the window loads
+        window.addEventListener('load', createStars);
+        
+        let resendTimer;
+        let timeLeft = 60;
+
+        // Verify code function
+        async function verifyCode() {
+            const code = document.getElementById('verificationCode').value;
+            
+            if (code.length !== 6) {
+                alert('Please enter a 6-digit code');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('verify_code', '1');
+            formData.append('code', code);
+            
+            try {
+                const response = await fetch('staffregister.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Hide modal
+                    document.getElementById('verificationModal').classList.remove('active');
+                    
+                    // Create success popup
+                    const popup = document.createElement('div');
+                    popup.style.position = 'fixed';
+                    popup.style.top = '50%';
+                    popup.style.left = '50%';
+                    popup.style.transform = 'translate(-50%, -50%)';
+                    popup.style.backgroundColor = 'white';
+                    popup.style.padding = '30px 40px';
+                    popup.style.borderRadius = '15px';
+                    popup.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.3)';
+                    popup.style.zIndex = '10000';
+                    popup.style.textAlign = 'center';
+                    popup.style.fontFamily = "'Poppins', sans-serif";
+                    
+                    const icon = document.createElement('div');
+                    icon.innerHTML = '<i class="fas fa-check-circle" style="font-size: 50px; color: #4CAF50; margin-bottom: 20px;"></i>';
+                    popup.appendChild(icon);
+                    
+                    const message = document.createElement('p');
+                    message.textContent = result.message;
+                    message.style.margin = '10px 0';
+                    message.style.color = '#333';
+                    message.style.fontSize = '18px';
+                    message.style.fontWeight = '600';
+                    popup.appendChild(message);
+                    
+                    const overlay = document.createElement('div');
+                    overlay.style.position = 'fixed';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.width = '100%';
+                    overlay.style.height = '100%';
+                    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                    overlay.style.zIndex = '9999';
+                    
+                    document.body.appendChild(overlay);
+                    document.body.appendChild(popup);
+                    
+                    setTimeout(() => {
+                        window.location.href = 'stafflogin.html';
+                    }, 2000);
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('An error occurred. Please try again.');
+                console.error('Error:', error);
+            }
+        }
+
+        // Resend code function
+        async function resendCode() {
+            const formData = new FormData();
+            formData.append('resend_code', '1');
+            
+            try {
+                const response = await fetch('staffregister.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert(result.message);
+                    timeLeft = 60;
+                    startResendTimer();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('An error occurred. Please try again.');
+                console.error('Error:', error);
+            }
+        }
+
+        // Start resend timer
+        function startResendTimer() {
+            const timerDiv = document.getElementById('timer');
+            const resendBtn = document.querySelector('.btn-resend');
+            
+            clearInterval(resendTimer);
+            resendBtn.disabled = true;
+            resendBtn.style.opacity = '0.5';
+            
+            resendTimer = setInterval(() => {
+                timeLeft--;
+                timerDiv.textContent = `Resend available in ${timeLeft} seconds`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(resendTimer);
+                    timerDiv.textContent = '';
+                    resendBtn.disabled = false;
+                    resendBtn.style.opacity = '1';
+                    timeLeft = 60;
+                }
+            }, 1000);
+        }
+
+        // Single DOMContentLoaded event handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector("#registrationForm");
+            const errorMessage = document.getElementById("error-message");
+            const verificationInput = document.getElementById('verificationCode');
+            
+            // Allow only numbers in verification code input
+            verificationInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+                
+                // Auto-submit when 6 digits entered
+                if (this.value.length === 6) {
+                    verifyCode();
+                }
+            });
+            
+            // File upload handler
+            const fileInput = document.getElementById('id_document');
+            const fileChosen = document.getElementById('file-chosen');
+            const fileContainer = document.querySelector('.file-input-container');
+
+            fileContainer.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', function(){
+                fileChosen.textContent = this.files.length > 0 
+                    ? this.files[0].name 
+                    : 'Upload Valid School/Employee ID';
+                if(this.files.length > 0) {
+                    const primaryColor = getComputedStyle(document.documentElement)
+                        .getPropertyValue('--primary-color');
+                    fileContainer.style.color = primaryColor;
+                }
+            });
+            
+            // Form submit handler - SINGLE VERSION
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                
+                // Basic validation
+                const password = form.querySelector('input[name="password"]').value;
+                const confirmPassword = form.querySelector('input[name="confirm_password"]').value;
+                
+                if (password !== confirmPassword) {
+                    errorMessage.textContent = "Passwords do not match!";
+                    errorMessage.style.display = "block";
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    errorMessage.textContent = "Password must be at least 6 characters long!";
+                    errorMessage.style.display = "block";
+                    return;
+                }
+                
+                errorMessage.style.display = "none";
+                const formData = new FormData(form);
+                
+                try {
+                    const response = await fetch("staffregister.php", {
+                        method: "POST",
+                        body: formData,
+                    });
+    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+    
+                    const result = await response.json();
+                    
+                    if (result.status === "success") {
+                        if (result.show_verification) {
+                            // Show verification modal
+                            document.getElementById('verificationModal').classList.add('active');
+                            startResendTimer();
+                        } else {
+                            // Fallback for old behavior (shouldn't happen)
+                            const popup = document.createElement('div');
+                            popup.style.position = 'fixed';
+                            popup.style.top = '50%';
+                            popup.style.left = '50%';
+                            popup.style.transform = 'translate(-50%, -50%)';
+                            popup.style.backgroundColor = 'white';
+                            popup.style.padding = '20px 30px';
+                            popup.style.borderRadius = '10px';
+                            popup.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
+                            popup.style.zIndex = '1000';
+                            popup.style.textAlign = 'center';
+                            popup.style.fontFamily = "'Poppins', sans-serif";
+                            popup.style.color = '#8E1616';
+                            popup.style.fontWeight = '600';
+                            popup.style.fontSize = '18px';
+                            
+                            const icon = document.createElement('div');
+                            icon.innerHTML = '<i class="fas fa-check-circle" style="font-size: 40px; color: #8E1616; margin-bottom: 15px;"></i>';
+                            popup.appendChild(icon);
+                            
+                            const message = document.createElement('p');
+                            message.textContent = result.message;
+                            message.style.margin = '10px 0 20px';
+                            popup.appendChild(message);
+                            
+                            const overlay = document.createElement('div');
+                            overlay.style.position = 'fixed';
+                            overlay.style.top = '0';
+                            overlay.style.left = '0';
+                            overlay.style.width = '100%';
+                            overlay.style.height = '100%';
+                            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                            overlay.style.zIndex = '999';
+                            
+                            document.body.appendChild(overlay);
+                            document.body.appendChild(popup);
+                            
+                            setTimeout(() => {
+                                window.location.href = "stafflogin.html";
+                            }, 2000);
+                        }
+                    } else {
+                        errorMessage.textContent = result.message;
+                        errorMessage.style.display = "block";
+                    }
+                } catch (error) {
+                    console.error("Error during form submission:", error);
+                    errorMessage.textContent = "An error occurred: " + error.message;
+                    errorMessage.style.display = "block";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

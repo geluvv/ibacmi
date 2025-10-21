@@ -1,0 +1,100 @@
+# Archival Fix Summary - Graduation Date Issue
+
+## Problem
+- School year 2025-2026 ended on Oct 19, 2025
+- Two 4th year students should have been archived with "immediately upon graduation" timing
+- Students were NOT being archived because their `graduation_date` field was `NULL`
+- The archival system requires a valid `graduation_date` to determine eligibility
+
+## Root Cause
+The `auto_advance_processor.php` file did not set the `graduation_date` field when the school year ended. It only changed student status to 'graduated' but didn't record WHEN they graduated.
+
+## Solution Applied
+Made minimal targeted changes to 2 files only:
+
+### 1. Fixed `auto_advance_processor.php`
+**What was added:**
+- When school year ends, automatically set `graduation_date` = school year `end_date` for ALL existing 4th year students
+- Set `is_graduated` = 1
+- Set `status` = 'graduated'
+
+**Where:** Lines 72-88
+
+### 2. Fixed `archival_api.php`  
+**What was added:**
+- Use `COALESCE(s.graduation_date, ?)` to fallback to school year end date if student's graduation_date is NULL
+- Auto-update students with missing graduation dates when checking archival eligibility
+
+**Where:** Lines 197-212
+
+## How to Apply the Fix to Existing Students
+
+### Option 1: Run Auto-Advance Processor Manually
+```
+http://localhost/ibacmi/AdminAccount/auto_advance_processor.php
+```
+This will set graduation dates for existing 4th year students.
+
+### Option 2: Run SQL Command Directly
+```sql
+UPDATE students 
+SET graduation_date = '2025-10-19',
+    is_graduated = 1,
+    status = 'graduated'
+WHERE year_level = 4
+AND (graduation_date IS NULL OR is_graduated = 0);
+```
+
+### Option 3: Use Test Archival Page
+1. Go to: `http://localhost/ibacmi/AdminAccount/test_archival.php`
+2. Review the diagnostic information
+3. The archival system will automatically fix graduation dates when you check for eligible students
+
+## Verification Steps
+
+1. **Check 4th year students have graduation dates:**
+```sql
+SELECT student_id, first_name, last_name, year_level, 
+       graduation_date, is_graduated, is_archived, status
+FROM students 
+WHERE year_level = 4;
+```
+
+Expected: `graduation_date` should be `2025-10-19`
+
+2. **Check archival eligibility:**
+- Go to Backup Management page
+- Scroll to "Graduation-Based Archival"
+- Check the statistics - should show 2 pending students
+- Click "Run Automatic Archival"
+
+3. **Verify archival completed:**
+```sql
+SELECT student_id, first_name, last_name, is_archived
+FROM students 
+WHERE year_level = 4;
+```
+
+Expected: `is_archived` should be `1`
+
+## What Changes Were Made
+
+✅ **auto_advance_processor.php** - Added logic to set graduation_date for 4th year students when school year ends  
+✅ **archival_api.php** - Added fallback logic and auto-fix for missing graduation dates  
+❌ **No new files created**  
+❌ **No existing features removed**  
+❌ **No database schema changes**
+
+## Impact
+- **Backward compatible** - doesn't break existing functionality
+- **Self-healing** - automatically fixes missing graduation dates when detected
+- **Minimal changes** - only touched the essential logic needed to fix the issue
+- **Future-proof** - will work correctly for all future school years
+
+## Testing
+After applying this fix, your 2 4th year students from school year 2025-2026 should:
+1. Have `graduation_date` = 2025-10-19
+2. Have `is_graduated` = 1  
+3. Have `status` = 'graduated'
+4. Be eligible for archival with "immediate" timing
+5. Be archived when you run the automatic archival process

@@ -1,0 +1,206 @@
+       :root {
+            --primary: #800000;
+            --primary-hover: #6a0000;
+            --sidebar-bg: #f8f9fa;
+            --text-dark: #343a40;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f7f9;
+            color: var(--text-dark);
+        }
+
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            z-index: 100;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-container {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            padding: 0.8rem 1.5rem;
+            margin: 0.3rem 0.8rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--primary);
+            color: white !important;
+        }
+     
+        .submenu {
+            margin-left: 2rem;
+            display: none;
+        }
+
+        .nav-item:hover .submenu {
+            display: block;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .modal-header {
+            background-color: var(--primary);
+        }
+
+        .modal-header .modal-title {
+            color: white;
+        }
+
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+
+        .location-input {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .location-input.show {
+            display: block;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-button {
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-button:hover {
+            border-color: var(--primary);
+            background-color: #fff5f5;
+        }
+
+        .file-input-button input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            color: white;
+        }
+
+        .page-header-styled {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(128, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            border-left: 5px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header-styled h3 {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.75rem;
+            margin: 0;
+        }
+
+        .page-header-styled h3 i {
+           margin-right: 0.75rem;
+        }
+
+        .google-account-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+            padding: 5px;
+        }
+        
+        .google-account-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .google-account-item:hover {
+            background-color: #f8f9fa;
+            border-color: #800000;
+        }
+        
+        .google-account-item.active {
+            background-color: #fff5f5;
+            border-color: #800000;
+        }
+        
+        .google-account-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        #backupProgress {
+            margin-top: 15px;
+        }
+
+        .progress {
+            height: 20px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        #progressText {
+            font-size: 14px;
+            color: #666;
+        }

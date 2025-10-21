@@ -1,0 +1,5 @@
+Options +Indexes
+<FilesMatch "\.zip$">
+    Header set Content-Type application/zip
+    Header set Content-Disposition attachment
+</FilesMatch>

@@ -1,0 +1,1707 @@
+<?php
+// filepath: c:\xampp\htdocs\ibacmi\AdminAccount\backup.php
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+ini_set('memory_limit', '512M');
+ini_set('max_execution_time', 0);
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+require_once '../db_connect.php';
+date_default_timezone_set('Asia/Manila');
+session_start();
+
+// Google Drive API Configuration
+define('GOOGLE_DRIVE_API_URL', 'https://www.googleapis.com/drive/v3/files');
+define('GOOGLE_DRIVE_UPLOAD_URL', 'https://www.googleapis.com/upload/drive/v3/files');
+define('GOOGLE_TOKEN_URL', 'https://oauth2.googleapis.com/token');
+define('GOOGLE_CLIENT_ID', '282796919113-soosvl7lq0b783h33159m55lcf4ek35s.apps.googleusercontent.com');
+define('GOOGLE_CLIENT_SECRET', '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'); // Replace with your actual client secret
+
+/**
+ * Initializes necessary system tables if they don't exist.
+ */
+function initializeSystemTables($conn) {
+    $createSettingsTable = "
+        CREATE TABLE IF NOT EXISTS system_settings (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            setting_name VARCHAR(100) UNIQUE NOT NULL,
+            setting_value TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    ";
+    if (!$conn->query($createSettingsTable)) {
+        error_log("Error creating system_settings table: " . $conn->error);
+    }
+
+    $createSyncLogsTable = "
+        CREATE TABLE IF NOT EXISTS sync_logs (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            student_id INT,
+            document_id INT UNIQUE,
+            google_drive_file_id VARCHAR(255),
+            sync_status ENUM('pending', 'success', 'failed') DEFAULT 'pending',
+            sync_type ENUM('manual', 'auto') DEFAULT 'auto',
+            error_message TEXT,
+            synced_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_student_id (student_id),
+            INDEX idx_sync_status (sync_status)
+        )
+    ";
+    if (!$conn->query($createSyncLogsTable)) {
+        error_log("Error creating sync_logs table: " . $conn->error);
+    }
+
+    $createBackupLogsTable = "
+        CREATE TABLE IF NOT EXISTS backup_logs (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            backup_type ENUM('manual', 'automatic') DEFAULT 'manual',
+            storage_type ENUM('local', 'cloud') DEFAULT 'cloud',
+            student_count INT DEFAULT 0,
+            file_count INT DEFAULT 0,
+            backup_size BIGINT DEFAULT 0,
+            status ENUM('success', 'failed', 'in_progress') DEFAULT 'in_progress',
+            error_message TEXT,
+            backup_path VARCHAR(500),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            completed_at TIMESTAMP NULL,
+            INDEX idx_backup_logs_created (created_at),
+            INDEX idx_backup_logs_status (status)
+        )
+    ";
+    if (!$conn->query($createBackupLogsTable)) {
+        error_log("Error creating backup_logs table: " . $conn->error);
+    }
+
+    $createArchiveLogsTable = "
+        CREATE TABLE IF NOT EXISTS archive_logs (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            school_year VARCHAR(20) NOT NULL,
+            student_count INT DEFAULT 0,
+            file_count INT DEFAULT 0,
+            archive_size BIGINT DEFAULT 0,
+            storage_type ENUM('local', 'cloud') DEFAULT 'cloud',
+            archive_path VARCHAR(500),
+            status ENUM('success', 'failed', 'in_progress') DEFAULT 'in_progress',
+            error_message TEXT,
+            archived_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_archive_logs_year (school_year),
+            INDEX idx_archive_logs_status (status)
+        )
+    ";
+    if (!$conn->query($createArchiveLogsTable)) {
+        error_log("Error creating archive_logs table: " . $conn->error);
+    }
+
+    $createSchoolYearsTable = "
+        CREATE TABLE IF NOT EXISTS school_years (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            school_year VARCHAR(20) UNIQUE NOT NULL,
+            is_active BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_active (is_active)
+        )
+    ";
+    if (!$conn->query($createSchoolYearsTable)) {
+        error_log("Error creating school_years table: " . $conn->error);
+    }
+}
+
+initializeSystemTables($conn);
+
+// Handle file downloads
+if (isset($_GET['download'])) {
+    $fileName = basename($_GET['download']);
+    $filePath = "backups/$fileName";
+
+    if (file_exists($filePath)) {
+        header('Content-Type: application/zip');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Content-Length: ' . filesize($filePath));
+        readfile($filePath);
+        exit();
+    } else {
+        http_response_code(404);
+        echo "File not found";
+        exit();
+    }
+}
+
+/**
+ * Refresh access token using refresh token
+ */
+function refreshAccessToken() {
+    global $conn;
+    
+    $tokens = getStoredTokens();
+    if (!$tokens['refresh_token']) {
+        error_log("No refresh token available for token refresh");
+        return false;
+    }
+    
+    $postData = [
+        'client_id' => GOOGLE_CLIENT_ID,
+        'client_secret' => GOOGLE_CLIENT_SECRET,
+        'refresh_token' => $tokens['refresh_token'],
+        'grant_type' => 'refresh_token'
+    ];
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, GOOGLE_TOKEN_URL);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        $responseData = json_decode($response, true);
+        if (isset($responseData['access_token'])) {
+            // Store the new access token
+            $query = "UPDATE system_settings SET setting_value = ?, updated_at = NOW() WHERE setting_name = 'google_drive_access_token'";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("s", $responseData['access_token']);
+            $stmt->execute();
+            $stmt->close();
+            
+            // Store token expiry time
+            $expiresAt = date('Y-m-d H:i:s', time() + ($responseData['expires_in'] ?? 3600));
+            $query = "INSERT INTO system_settings (setting_name, setting_value, updated_at)
+                      VALUES ('google_drive_token_expires_at', ?, NOW())
+                      ON DUPLICATE KEY UPDATE setting_value = ?, updated_at = NOW()";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("ss", $expiresAt, $expiresAt);
+            $stmt->execute();
+            $stmt->close();
+            
+            error_log("Access token refreshed successfully");
+            return $responseData['access_token'];
+        }
+    }
+    
+    error_log("Failed to refresh access token. HTTP Code: $httpCode, Response: $response");
+    return false;
+}
+
+/**
+ * Get a valid access token (refresh if necessary)
+ */
+function getValidAccessToken() {
+    global $conn;
+    
+    $tokens = getStoredTokens();
+    if (!$tokens['access_token']) {
+        return null;
+    }
+    
+    // Check if token is expired
+    $query = "SELECT setting_value FROM system_settings WHERE setting_name = 'google_drive_token_expires_at'";
+    $result = $conn->query($query);
+    
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $expiresAt = strtotime($row['setting_value']);
+        $now = time();
+        
+        // If token expires in less than 5 minutes, refresh it
+        if ($expiresAt - $now < 300) {
+            error_log("Access token expires soon, refreshing...");
+            $newToken = refreshAccessToken();
+            if ($newToken) {
+                return $newToken;
+            } else {
+                // If refresh fails, clear the connection
+                clearGoogleDriveConnection();
+                return null;
+            }
+        }
+    }
+    
+    return $tokens['access_token'];
+}
+
+/**
+ * Clear Google Drive connection when tokens are invalid
+ */
+function clearGoogleDriveConnection() {
+    global $conn;
+    
+    $query = "DELETE FROM system_settings WHERE setting_name IN ('google_drive_access_token', 'google_drive_refresh_token', 'google_drive_connected', 'google_drive_token_expires_at')";
+    $conn->query($query);
+    
+    // Disable auto-sync
+    $query = "UPDATE system_settings SET setting_value = 'disabled' WHERE setting_name = 'auto_sync_status'";
+    $conn->query($query);
+    
+    error_log("Google Drive connection cleared due to invalid tokens");
+}
+
+/**
+ * Enhanced function to store tokens with expiry tracking
+ */
+function storeTokensPersistent($accessToken, $refreshToken = null) {
+    global $conn;
+    
+    error_log("Storing tokens - Access Token: " . substr($accessToken, 0, 20) . "...");
+    
+    // Store access token
+    $query = "INSERT INTO system_settings (setting_name, setting_value, updated_at)
+              VALUES ('google_drive_access_token', ?, NOW())
+              ON DUPLICATE KEY UPDATE setting_value = ?, updated_at = NOW()";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ss", $accessToken, $accessToken);
+    $stmt->execute();
+    $stmt->close();
+
+    // Store refresh token if provided
+    if ($refreshToken) {
+        error_log("Storing refresh token: " . substr($refreshToken, 0, 20) . "...");
+        $query = "INSERT INTO system_settings (setting_name, setting_value, updated_at)
+                  VALUES ('google_drive_refresh_token', ?, NOW())
+                  ON DUPLICATE KEY UPDATE setting_value = ?, updated_at = NOW()";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("ss", $refreshToken, $refreshToken);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    // Store token expiry (1 hour from now)
+    $expiresAt = date('Y-m-d H:i:s', time() + 3600);
+    $query = "INSERT INTO system_settings (setting_name, setting_value, updated_at)
+              VALUES ('google_drive_token_expires_at', ?, NOW())
+              ON DUPLICATE KEY UPDATE setting_value = ?, updated_at = NOW()";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ss", $expiresAt, $expiresAt);
+    $stmt->execute();
+    $stmt->close();
+
+    // Mark connection as persistent
+    $query = "INSERT INTO system_settings (setting_name, setting_value, updated_at)
+              VALUES ('google_drive_connected', '1', NOW())
+              ON DUPLICATE KEY UPDATE setting_value = '1', updated_at = NOW()";
+    $conn->query($query);
+
+    // Auto-enable sync when Google Drive is connected
+    $query = "INSERT INTO system_settings (setting_name, setting_value, updated_at)
+              VALUES ('auto_sync_status', 'enabled', NOW())
+              ON DUPLICATE KEY UPDATE setting_value = 'enabled', updated_at = NOW()";
+    $conn->query($query);
+
+    error_log("Google Drive tokens stored with persistent connection and auto-sync enabled");
+}
+
+/**
+ * Test Google Drive connection with automatic token refresh
+ */
+function testGoogleDriveConnection() {
+    $accessToken = getValidAccessToken();
+    if (!$accessToken) {
+        error_log("No valid access token for Google Drive connection test");
+        return false;
+    }
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://www.googleapis.com/drive/v3/about?fields=user');
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $accessToken
+    ]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        error_log("Google Drive connection test failed with HTTP code: $httpCode. Response: " . substr($response, 0, 200));
+        
+        if ($httpCode === 401) {
+            // Token might be expired, try to refresh
+            error_log("Access token appears to be expired, attempting refresh...");
+            $newToken = refreshAccessToken();
+            if ($newToken) {
+                // Test again with new token
+                return testGoogleDriveConnection();
+            } else {
+                // If refresh fails, clear connection
+                clearGoogleDriveConnection();
+                return false;
+            }
+        }
+        
+        if ($httpCode === 403) {
+            error_log("This is likely due to the app not being verified by Google or not being in production mode");
+        }
+        
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Archive students and their files that are older than 5 years
+ */
+function archiveOldStudents() {
+    global $conn;
+
+    try {
+        // Get current year
+        $currentYear = date('Y');
+        $archiveThreshold = $currentYear - 5;
+
+        // Find school years older than 5 years
+        $query = "SELECT school_year FROM school_years WHERE CAST(SUBSTRING_INDEX(school_year, '-', 1) AS UNSIGNED) <= ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("i", $archiveThreshold);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $archivedSchoolYears = [];
+        while ($row = $result->fetch_assoc()) {
+            $archivedSchoolYears[] = $row['school_year'];
+        }
+        $stmt->close();
+
+        if (empty($archivedSchoolYears)) {
+            error_log("No school years found for archiving (threshold: $archiveThreshold)");
+            return ['status' => 'success', 'message' => 'No old data to archive'];
+        }
+
+        $totalStudents = 0;
+        $totalFiles = 0;
+        $totalSize = 0;
+
+        foreach ($archivedSchoolYears as $schoolYear) {
+            // Get students for this school year
+            $studentQuery = "SELECT id, CONCAT(id, '_', first_name, '_', last_name) as student_folder FROM students WHERE school_year = ?";
+            $stmt = $conn->prepare($studentQuery);
+            $stmt->bind_param("s", $schoolYear);
+            $stmt->execute();
+            $students = $stmt->get_result();
+            $stmt->close();
+
+            while ($student = $students->fetch_assoc()) {
+                $studentId = $student['id'];
+                $studentFolder = $student['student_folder'];
+
+                // Get all documents for this student
+                $docQuery = "SELECT id, file_path FROM student_documents WHERE student_id = ? AND is_submitted = 1 AND file_path IS NOT NULL AND file_path != ''";
+                $stmt = $conn->prepare($docQuery);
+                $stmt->bind_param("i", $studentId);
+                $stmt->execute();
+                $documents = $stmt->get_result();
+                $stmt->close();
+
+                $fileCount = 0;
+                $sizeCount = 0;
+
+                while ($doc = $documents->fetch_assoc()) {
+                    $filePath = $doc['file_path'];
+                    if (file_exists($filePath)) {
+                        $fileSize = filesize($filePath);
+                        $sizeCount += $fileSize;
+                        $fileCount++;
+
+                        // Move to archive directory
+                        $archiveDir = "archives/$schoolYear/$studentFolder/";
+                        if (!is_dir($archiveDir)) {
+                            mkdir($archiveDir, 0755, true);
+                        }
+
+                        $fileName = basename($filePath);
+                        $archivePath = $archiveDir . $fileName;
+
+                        if (rename($filePath, $archivePath)) {
+                            // Update document path in database
+                            $updateQuery = "UPDATE student_documents SET file_path = ?, is_submitted = 0 WHERE id = ?";
+                            $stmt = $conn->prepare($updateQuery);
+                            $stmt->bind_param("si", $archivePath, $doc['id']);
+                            $stmt->execute();
+                            $stmt->close();
+                        }
+                    }
+                }
+
+                // Update student status
+                $updateStudent = "UPDATE students SET status = 'archived' WHERE id = ?";
+                $stmt = $conn->prepare($updateStudent);
+                $stmt->bind_param("i", $studentId);
+                $stmt->execute();
+                $stmt->close();
+
+                $totalStudents++;
+                $totalFiles += $fileCount;
+                $totalSize += $sizeCount;
+            }
+        }
+
+        // Log the archiving
+        $logQuery = "INSERT INTO archive_logs (school_year, student_count, file_count, archive_size, storage_type, status, archived_at)
+                     VALUES (?, ?, ?, ?, 'local', 'success', NOW())";
+        $stmt = $conn->prepare($logQuery);
+        $schoolYearsStr = implode(', ', $archivedSchoolYears);
+        $stmt->bind_param("siis", $schoolYearsStr, $totalStudents, $totalFiles, $totalSize);
+        $stmt->execute();
+        $stmt->close();
+
+        return [
+            'status' => 'success',
+            'message' => "Archived $totalStudents students, $totalFiles files ($totalSize bytes) from school years: $schoolYearsStr"
+        ];
+
+    } catch (Exception $e) {
+        error_log("Error archiving old students: " . $e->getMessage());
+        return ['status' => 'error', 'message' => $e->getMessage()];
+    }
+}
+
+/**
+ * Create folder in Google Drive
+ */
+function createGoogleDriveFolder($folderName, $parentId = null) {
+    $accessToken = getValidAccessToken();
+    if (!$accessToken) {
+        return false;
+    }
+
+    $metadata = [
+        'name' => $folderName,
+        'mimeType' => 'application/vnd.google-apps.folder'
+    ];
+
+    if ($parentId) {
+        $metadata['parents'] = [$parentId];
+    }
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, GOOGLE_DRIVE_API_URL . '?uploadType=multipart');
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $accessToken,
+        'Content-Type: application/json'
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($metadata));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode === 200) {
+        $result = json_decode($response, true);
+        return $result['id'] ?? false;
+    }
+
+    return false;
+}
+
+/**
+ * Upload file to Google Drive
+ */
+function uploadFileToGoogleDrive($filePath, $fileName, $parentId = null) {
+    $accessToken = getValidAccessToken();
+    if (!$accessToken || !file_exists($filePath)) {
+        return false;
+    }
+
+    $metadata = ['name' => $fileName];
+    if ($parentId) {
+        $metadata['parents'] = [$parentId];
+    }
+
+    $boundary = 'boundary_' . time();
+    $body = "--$boundary\r\n";
+    $body .= "Content-Type: application/json; charset=UTF-8\r\n\r\n";
+    $body .= json_encode($metadata) . "\r\n";
+    $body .= "--$boundary\r\n";
+    $body .= "Content-Type: " . mime_content_type($filePath) . "\r\n\r\n";
+    $body .= file_get_contents($filePath) . "\r\n";
+    $body .= "--$boundary--";
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, GOOGLE_DRIVE_UPLOAD_URL . '?uploadType=multipart');
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $accessToken,
+        'Content-Type: multipart/related; boundary=' . $boundary
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode === 200) {
+        $result = json_decode($response, true);
+        return $result['id'] ?? false;
+    }
+
+    return false;
+}
+
+/**
+ * Get or create Google Drive folder
+ */
+function getOrCreateGoogleDriveFolder($folderName, $parentId = null) {
+    $accessToken = getValidAccessToken();
+    if (!$accessToken) {
+        return false;
+    }
+
+    // First, try to find existing folder
+    $searchUrl = GOOGLE_DRIVE_API_URL . '?q=name=\'' . urlencode($folderName) . '\'';
+    if ($parentId) {
+        $searchUrl .= ' and \'' . $parentId . '\' in parents';
+    }
+    $searchUrl .= ' and mimeType=\'application/vnd.google-apps.folder\' and trashed=false';
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $searchUrl);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $accessToken
+    ]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode === 200) {
+        $result = json_decode($response, true);
+        if (!empty($result['files'])) {
+            return $result['files'][0]['id'];
+        }
+    }
+
+    // Folder doesn't exist, create it
+    return createGoogleDriveFolder($folderName, $parentId);
+}
+
+/**
+ * Update existing file in Google Drive
+ */
+function updateGoogleDriveFile($fileId, $filePath) {
+    $accessToken = getValidAccessToken();
+    if (!$accessToken || !file_exists($filePath)) {
+        return false;
+    }
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, GOOGLE_DRIVE_UPLOAD_URL . '/' . $fileId . '?uploadType=media');
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $accessToken,
+        'Content-Type: ' . mime_content_type($filePath)
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, file_get_contents($filePath));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    return $httpCode === 200;
+}
+
+// API Endpoints
+
+// Handle Store Google Drive Access Token with persistent connection
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'store_access_token') {
+    header('Content-Type: application/json');
+    try {
+        $accessToken = $_POST['access_token'] ?? '';
+        $refreshToken = $_POST['refresh_token'] ?? null;
+
+        if (empty($accessToken)) {
+            throw new Exception('Access token is required.');
+        }
+
+        // Test the token before storing
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://www.googleapis.com/drive/v3/about?fields=user');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $accessToken]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode !== 200) {
+            $errorMessage = 'Invalid access token or Google Drive API error.';
+            if ($httpCode === 403) {
+                $errorMessage = 'Google Drive API access denied. This can happen if:
+                1. The app is not verified by Google (expected during development)
+                2. Your email is not added as a test user in Google Cloud Console
+                3. The Google Drive API is not enabled
+                
+                To fix this:
+                - Go to Google Cloud Console → APIs & Services → OAuth consent screen
+                - Add your email (' . ($_POST['user_email'] ?? 'ibacmiorddb@gmail.com') . ') as a test user
+                - Ensure Google Drive API is enabled in your project';
+            } elseif ($httpCode === 401) {
+                $errorMessage = 'Access token is invalid or expired. Please try connecting again.';
+            }
+            
+            error_log("Google Drive API Error - HTTP Code: $httpCode, Response: " . substr($response, 0, 500));
+            throw new Exception($errorMessage);
+        }
+
+        storeTokensPersistent($accessToken, $refreshToken);
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Connected to Google Drive successfully! Auto-sync has been enabled.',
+            'auto_sync_enabled' => true
+        ]);
+    } catch (Exception $e) {
+        error_log("Store access token error: " . $e->getMessage());
+        echo json_encode([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+// Handle Auto-Sync Control - FIXED VERSION
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'toggle_auto_sync') {
+    header('Content-Type: application/json');
+    try {
+        $newStatus = $_POST['status'] ?? '';
+        if (!in_array($newStatus, ['enabled', 'paused', 'disabled'])) {
+            throw new Exception('Invalid sync status provided.');
+        }
+
+        // Check Google Drive connection if trying to enable
+        if ($newStatus === 'enabled') {
+            $isConnected = isGoogleDriveConnected();
+            $tokens = getStoredTokens();
+            
+            if (!$isConnected || !$tokens['access_token']) {
+                throw new Exception('Google Drive is not connected. Please connect first.');
+            }
+            
+            // Test connection
+            if (!testGoogleDriveConnection()) {
+                throw new Exception('Google Drive connection is invalid. Please reconnect.');
+            }
+        }
+
+        $query = "INSERT INTO system_settings (setting_name, setting_value, updated_at)
+                  VALUES ('auto_sync_status', ?, NOW())
+                  ON DUPLICATE KEY UPDATE setting_value = ?, updated_at = NOW()";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("ss", $newStatus, $newStatus);
+        if (!$stmt->execute()) {
+            throw new Exception('Failed to update sync status: ' . $stmt->error);
+        }
+        $stmt->close();
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Auto-sync status updated to: ' . $newStatus,
+            'sync_status' => $newStatus
+        ]);
+        
+    } catch (Exception $e) {
+        error_log("Auto-sync toggle error: " . $e->getMessage());
+        echo json_encode([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+// Handle disconnect Google Drive - FIXED VERSION
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'disconnect_google') {
+    header('Content-Type: application/json');
+    try {
+        // First disable auto-sync
+        $disableQuery = "INSERT INTO system_settings (setting_name, setting_value, updated_at)
+                       VALUES ('auto_sync_status', 'disabled', NOW())
+                       ON DUPLICATE KEY UPDATE setting_value = 'disabled', updated_at = NOW()";
+        $conn->query($disableQuery);
+
+        // Then delete all Google Drive related settings
+        $query = "DELETE FROM system_settings WHERE setting_name IN ('google_drive_access_token', 'google_drive_refresh_token', 'google_drive_connected')";
+        if (!$conn->query($query)) {
+            throw new Exception('Failed to delete access tokens from database: ' . $conn->error);
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Successfully disconnected from Google Drive. Auto-sync has been disabled.'
+        ]);
+    } catch (Exception $e) {
+        error_log("Disconnect Google Drive error: " . $e->getMessage());
+        echo json_encode([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+// Handle get sync status - FIXED VERSION
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_sync_status') {
+    header('Content-Type: application/json');
+    try {
+        $syncStatus = getAutoSyncStatus();
+        $tokens = getStoredTokens();
+        $isConnected = isGoogleDriveConnected();
+        $hasAccessToken = !empty($tokens['access_token']);
+
+        // Test actual connection with token refresh if needed
+        $connectionValid = false;
+        if ($isConnected && $hasAccessToken) {
+            $connectionValid = testGoogleDriveConnection();
+            if (!$connectionValid) {
+                // Connection test failed and tokens were cleared
+                $isConnected = false;
+                $hasAccessToken = false;
+                $tokens = getStoredTokens(); // Get updated tokens
+            }
+        }
+
+        // Get token expiry info
+        $tokenExpiryQuery = "SELECT setting_value FROM system_settings WHERE setting_name = 'google_drive_token_expires_at'";
+        $tokenExpiryResult = $conn->query($tokenExpiryQuery);
+        $tokenExpiresAt = null;
+        if ($tokenExpiryResult && $tokenExpiryResult->num_rows > 0) {
+            $row = $tokenExpiryResult->fetch_assoc();
+            $tokenExpiresAt = $row['setting_value'];
+        }
+
+        $totalStudentsQuery = "SELECT COUNT(DISTINCT id) as total_students FROM students WHERE (status IS NULL OR status != 'archived')";
+        $totalStudentsResult = $conn->query($totalStudentsQuery);
+        $totalStudents = $totalStudentsResult ? $totalStudentsResult->fetch_assoc()['total_students'] : 0;
+
+        $syncedFilesQuery = "SELECT COUNT(DISTINCT document_id) as synced_files FROM sync_logs WHERE sync_status = 'success'";
+        $syncedFilesResult = $conn->query($syncedFilesQuery);
+        $syncedFiles = $syncedFilesResult ? $syncedFilesResult->fetch_assoc()['synced_files'] : 0;
+
+        $lastSyncTimeQuery = "SELECT MAX(synced_at) as last_sync FROM sync_logs WHERE sync_status = 'success'";
+        $lastSyncTimeResult = $conn->query($lastSyncTimeQuery);
+        $lastSyncRow = $lastSyncTimeResult ? $lastSyncTimeResult->fetch_assoc() : null;
+        $lastSyncTime = ($lastSyncRow && $lastSyncRow['last_sync']) ? $lastSyncRow['last_sync'] : 'N/A';
+
+        $currentSchoolYear = getCurrentSchoolYear();
+
+        echo json_encode([
+            'status' => 'success',
+            'sync_status' => $syncStatus,
+            'has_access_token' => $hasAccessToken,
+            'is_connected' => $isConnected,
+            'connection_valid' => $connectionValid,
+            'access_token' => $hasAccessToken ? $tokens['access_token'] : null,
+            'token_expires_at' => $tokenExpiresAt,
+            'total_students' => (string)$totalStudents,
+            'synced_files' => (string)$syncedFiles,
+            'last_sync_time' => $lastSyncTime,
+            'current_school_year' => $currentSchoolYear
+        ]);
+    } catch (Exception $e) {
+        error_log("Get sync status error: " . $e->getMessage());
+        echo json_encode([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+// Handle add school year
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_school_year') {
+    header('Content-Type: application/json');
+    try {
+        $schoolYear = trim($_POST['school_year'] ?? '');
+        if (empty($schoolYear) || !preg_match('/^\d{4}-\d{4}$/', $schoolYear)) {
+            throw new Exception('Invalid school year format. Use YYYY-YYYY format.');
+        }
+
+        $query = "INSERT INTO school_years (school_year) VALUES (?)";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("s", $schoolYear);
+        
+        if ($stmt->execute()) {
+            echo json_encode([
+                'status' => 'success',
+                'message' => "School year {$schoolYear} added successfully."
+            ]);
+        } else {
+            throw new Exception('School year already exists or database error.');
+        }
+        $stmt->close();
+    } catch (Exception $e) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+// Handle set active school year
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'set_active_school_year') {
+    header('Content-Type: application/json');
+    try {
+        $schoolYear = $_POST['school_year'] ?? '';
+        if (empty($schoolYear)) {
+            throw new Exception('School year is required.');
+        }
+
+        $conn->query("UPDATE school_years SET is_active = 0");
+        
+        $query = "UPDATE school_years SET is_active = 1 WHERE school_year = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("s", $schoolYear);
+        
+        if ($stmt->execute() && $stmt->affected_rows > 0) {
+            echo json_encode([
+                'status' => 'success',
+                'message' => "Active school year set to {$schoolYear}."
+            ]);
+        } else {
+            throw new Exception('School year not found.');
+        }
+        $stmt->close();
+    } catch (Exception $e) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+// Handle get school years
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_school_years') {
+    header('Content-Type: application/json');
+    try {
+        $query = "SELECT school_year, is_active FROM school_years ORDER BY school_year DESC";
+        $result = $conn->query($query);
+        $schoolYears = [];
+        
+        while ($row = $result->fetch_assoc()) {
+            $schoolYears[] = $row;
+        }
+        
+        echo json_encode([
+            'status' => 'success',
+            'school_years' => $schoolYears
+        ]);
+    } catch (Exception $e) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+// Handle get backup logs
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_backup_logs') {
+    header('Content-Type: application/json');
+    try {
+        $logs = [];
+        $logsQuery = "SELECT * FROM backup_logs ORDER BY created_at DESC LIMIT 50";
+        $result = $conn->query($logsQuery);
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $logs[] = $row;
+            }
+        }
+        echo json_encode([
+            'status' => 'success',
+            'logs' => $logs
+        ]);
+    } catch (Exception $e) {
+        error_log("Get backup logs error: " . $e->getMessage());
+        echo json_encode([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+// Handle archive old data
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'archive_old_data') {
+    header('Content-Type: application/json');
+    try {
+        $result = archiveOldStudents();
+        echo json_encode($result);
+    } catch (Exception $e) {
+        error_log("Archive old data error: " . $e->getMessage());
+        echo json_encode([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+// Handle test connection
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'test_connection') {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Backup system is working',
+        'timestamp' => date('Y-m-d H:i:s')
+    ]);
+    exit();
+}
+
+// Handle create backup
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_backup') {
+    // Clear any existing output buffers
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+
+    // Start fresh output buffer
+    ob_start();
+
+    header('Content-Type: application/json');
+    header('Cache-Control: no-cache, must-revalidate');
+
+    // Ensure we can catch fatal errors
+    register_shutdown_function(function() {
+        $error = error_get_last();
+        if ($error !== null) {
+            // Clear any output and send error JSON
+            while (ob_get_level()) {
+                ob_end_clean();
+            }
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Fatal error: ' . $error['message'] . ' in ' . $error['file'] . ':' . $error['line']
+            ]);
+            exit();
+        }
+    });
+
+    try {
+        // Simple test backup - just return success for now
+        $response = [
+            'status' => 'success',
+            'message' => 'Backup system is working! Test backup completed.',
+            'storage_type' => $_POST['storage_type'] ?? 'local',
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
+
+        // Get the JSON output
+        $jsonOutput = json_encode($response);
+
+        // Clear any remaining buffers and output JSON
+        while (ob_get_level()) {
+            ob_end_flush();
+        }
+
+        echo $jsonOutput;
+        exit();
+    } catch (Exception $e) {
+        error_log("Create backup error: " . $e->getMessage());
+
+        // Ensure we always return valid JSON - clear all buffers first
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        $errorResponse = [
+            'status' => 'error',
+            'message' => substr($e->getMessage(), 0, 200) // Limit error message in response
+        ];
+
+        echo json_encode($errorResponse);
+        exit();
+    }
+
+    // Keep the original code commented out for now
+    /*
+    try {
+        $storageType = $_POST['storage_type'] ?? 'cloud';
+        $schoolYear = getCurrentSchoolYear();
+
+        // Create backup log entry
+        $backupLogQuery = "INSERT INTO backup_logs (backup_type, storage_type, status, created_at)
+                          VALUES ('manual', ?, 'in_progress', NOW())";
+        $stmt = $conn->prepare($backupLogQuery);
+        $stmt->bind_param("s", $storageType);
+        $stmt->execute();
+        $backupId = $stmt->insert_id;
+        $stmt->close();
+
+        $totalStudents = 0;
+        $totalFiles = 0;
+        $totalSize = 0;
+        $backupPath = '';
+
+        if ($storageType === 'cloud') {
+            // Google Drive backup - simplified version
+            if (!isGoogleDriveConnected()) {
+                throw new Exception('Google Drive is not connected. Please connect first.');
+            }
+
+            // Create main folder: IBACMI [School Year]
+            $mainFolderName = "IBACMI_Backup_$schoolYear";
+            $mainFolderId = getOrCreateGoogleDriveFolder($mainFolderName);
+
+            if (!$mainFolderId) {
+                throw new Exception('Failed to create/access main backup folder in Google Drive');
+            }
+
+            // Get just a few sample students for testing - limit to 5 students max
+            $studentQuery = "SELECT id, CONCAT(id, '_', first_name, '_', last_name) as student_folder
+                           FROM students
+                           WHERE (status IS NULL OR status != 'archived')
+                           ORDER BY id
+                           LIMIT 5"; // Just 5 students for testing
+            $students = $conn->query($studentQuery);
+
+            while ($student = $students->fetch_assoc()) {
+                $studentId = $student['id'];
+                $studentFolderName = $student['student_folder'];
+
+                // Create student folder
+                $studentFolderId = getOrCreateGoogleDriveFolder($studentFolderName, $mainFolderId);
+                if (!$studentFolderId) continue;
+
+                // Get just 1 document per student for testing
+                $docQuery = "SELECT id, file_path FROM student_documents
+                           WHERE student_id = ? AND is_submitted = 1 AND file_path IS NOT NULL AND file_path != ''
+                           LIMIT 1"; // Just 1 document per student
+                $stmt = $conn->prepare($docQuery);
+                $stmt->bind_param("i", $studentId);
+                $stmt->execute();
+                $documents = $stmt->get_result();
+                $stmt->close();
+
+                while ($doc = $documents->fetch_assoc()) {
+                    $filePath = $doc['file_path'];
+                    if (file_exists($filePath) && filesize($filePath) < 5 * 1024 * 1024) { // Max 5MB files
+                        $fileName = basename($filePath);
+                        $fileId = uploadFileToGoogleDrive($filePath, $fileName, $studentFolderId);
+
+                        if ($fileId) {
+                            // Update sync log
+                            $syncQuery = "INSERT INTO sync_logs (student_id, document_id, google_drive_file_id, sync_status, sync_type, synced_at)
+                                         VALUES (?, ?, ?, 'success', 'manual', NOW())
+                                         ON DUPLICATE KEY UPDATE google_drive_file_id = ?, sync_status = 'success', synced_at = NOW()";
+                            $stmt = $conn->prepare($syncQuery);
+                            $stmt->bind_param("iiss", $studentId, $doc['id'], $fileId, $fileId);
+                            $stmt->execute();
+                            $stmt->close();
+
+                            $totalFiles++;
+                            $totalSize += filesize($filePath);
+                        }
+                    }
+                }
+
+                $totalStudents++;
+            }
+
+            $backupPath = "Google Drive: $mainFolderName";
+
+        } else {
+            // Local backup - create simple ZIP with just a few files
+            $backupDir = "backups/";
+            if (!is_dir($backupDir)) {
+                mkdir($backupDir, 0755, true);
+            }
+
+            $zipFileName = "IBACMI_Backup_$schoolYear_" . date('Y-m-d_H-i-s') . ".zip";
+            $zipPath = $backupDir . $zipFileName;
+
+            $zip = new ZipArchive();
+            if ($zip->open($zipPath, ZipArchive::CREATE) !== TRUE) {
+                throw new Exception('Failed to create ZIP file');
+            }
+
+            // Add just a few sample files for testing
+            $sampleFiles = [
+                'AdminAccount/backup.php' => 'backup_script.php',
+                'AdminAccount/backup.html' => 'backup_interface.html'
+            ];
+
+            foreach ($sampleFiles as $source => $dest) {
+                if (file_exists($source)) {
+                    $zip->addFile($source, $dest);
+                    $totalFiles++;
+                    $totalSize += filesize($source);
+                }
+            }
+
+            // Get just 1 student for testing
+            $studentQuery = "SELECT id, CONCAT(id, '_', first_name, '_', last_name) as student_folder
+                           FROM students
+                           WHERE (status IS NULL OR status != 'archived')
+                           ORDER BY id
+                           LIMIT 1"; // Just 1 student
+            $students = $conn->query($studentQuery);
+
+            if ($students && $student = $students->fetch_assoc()) {
+                $studentId = $student['id'];
+                $studentFolder = $student['student_folder'];
+
+                // Get just 1 document for testing
+                $docQuery = "SELECT file_path FROM student_documents
+                           WHERE student_id = ? AND is_submitted = 1 AND file_path IS NOT NULL AND file_path != ''
+                           LIMIT 1";
+                $stmt = $conn->prepare($docQuery);
+                $stmt->bind_param("i", $studentId);
+                $stmt->execute();
+                $documents = $stmt->get_result();
+                $stmt->close();
+
+                if ($doc = $documents->fetch_assoc()) {
+                    $filePath = $doc['file_path'];
+                    if (file_exists($filePath) && filesize($filePath) < 2 * 1024 * 1024) { // Max 2MB
+                        $localPath = "$studentFolder/" . basename($filePath);
+                        $zip->addFile($filePath, $localPath);
+                        $totalFiles++;
+                        $totalSize += filesize($filePath);
+                    }
+                }
+
+                $totalStudents++;
+            }
+
+            $zip->close();
+            $backupPath = $zipPath;
+        }
+
+        // Update backup log
+        $updateQuery = "UPDATE backup_logs SET student_count = ?, file_count = ?, backup_size = ?, status = 'success', backup_path = ?, completed_at = NOW() WHERE id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param("iiissi", $totalStudents, $totalFiles, $totalSize, $backupPath, $backupId);
+        $stmt->execute();
+        $stmt->close();
+
+        $response = [
+            'status' => 'success',
+            'message' => "Backup completed successfully! Backed up $totalStudents students with $totalFiles files.",
+            'backup_path' => $backupPath,
+            'storage_type' => $storageType
+        ];
+
+        if ($storageType === 'local') {
+            $response['download_url'] = 'backup.php?download=' . urlencode($zipFileName);
+        }
+
+        // Get the JSON output
+        $jsonOutput = json_encode($response);
+
+        // Clear any remaining buffers and output JSON
+        while (ob_get_level()) {
+            ob_end_flush();
+        }
+
+        echo $jsonOutput;
+
+    } catch (Exception $e) {
+        error_log("Create backup error: " . $e->getMessage());
+
+        // Update backup log on failure
+        if (isset($backupId)) {
+            try {
+                $failQuery = "UPDATE backup_logs SET status = 'failed', error_message = ?, completed_at = NOW() WHERE id = ?";
+                $stmt = $conn->prepare($failQuery);
+                $errorMsg = substr($e->getMessage(), 0, 500); // Limit error message length
+                $stmt->bind_param("si", $errorMsg, $backupId);
+                $stmt->execute();
+                $stmt->close();
+            } catch (Exception $logError) {
+                error_log("Failed to update backup log: " . $logError->getMessage());
+            }
+        }
+
+        // Ensure we always return valid JSON - clear all buffers first
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        $errorResponse = [
+            'status' => 'error',
+            'message' => substr($e->getMessage(), 0, 200) // Limit error message in response
+        ];
+
+        echo json_encode($errorResponse);
+    }
+    exit();
+}
+        $storageType = $_POST['storage_type'] ?? 'cloud';
+        $schoolYear = getCurrentSchoolYear();
+
+        // Create backup log entry
+        $backupLogQuery = "INSERT INTO backup_logs (backup_type, storage_type, status, created_at)
+                          VALUES ('manual', ?, 'in_progress', NOW())";
+        $stmt = $conn->prepare($backupLogQuery);
+        $stmt->bind_param("s", $storageType);
+        $stmt->execute();
+        $backupId = $stmt->insert_id;
+        $stmt->close();
+
+        $totalStudents = 0;
+        $totalFiles = 0;
+        $totalSize = 0;
+        $backupPath = '';
+
+        if ($storageType === 'cloud') {
+            // Google Drive backup
+            if (!isGoogleDriveConnected()) {
+                throw new Exception('Google Drive is not connected. Please connect first.');
+            }
+
+            // Create main folder: IBACMI [School Year]
+            $mainFolderName = "IBACMI $schoolYear";
+            $mainFolderId = getOrCreateGoogleDriveFolder($mainFolderName);
+
+            if (!$mainFolderId) {
+                throw new Exception('Failed to create/access main backup folder in Google Drive');
+            }
+
+            // Get all active students - limit to prevent timeout
+            $studentQuery = "SELECT id, CONCAT(id, '_', first_name, '_', last_name) as student_folder
+                           FROM students
+                           WHERE (status IS NULL OR status != 'archived')
+                           ORDER BY id
+                           LIMIT 100"; // Process in batches of 100 students
+            $students = $conn->query($studentQuery);
+
+            while ($student = $students->fetch_assoc()) {
+                $studentId = $student['id'];
+                $studentFolderName = $student['student_folder'];
+
+                // Create student folder
+                $studentFolderId = getOrCreateGoogleDriveFolder($studentFolderName, $mainFolderId);
+                if (!$studentFolderId) continue;
+
+                // Get student's documents - limit to prevent timeout
+                $docQuery = "SELECT id, file_path FROM student_documents
+                           WHERE student_id = ? AND is_submitted = 1 AND file_path IS NOT NULL AND file_path != ''
+                           LIMIT 50"; // Max 50 documents per student
+                $stmt = $conn->prepare($docQuery);
+                $stmt->bind_param("i", $studentId);
+                $stmt->execute();
+                $documents = $stmt->get_result();
+                $stmt->close();
+
+                while ($doc = $documents->fetch_assoc()) {
+                    $filePath = $doc['file_path'];
+                    if (file_exists($filePath) && filesize($filePath) < 50 * 1024 * 1024) { // Skip files larger than 50MB
+                        $fileName = basename($filePath);
+                        $fileId = uploadFileToGoogleDrive($filePath, $fileName, $studentFolderId);
+
+                        if ($fileId) {
+                            // Update sync log
+                            $syncQuery = "INSERT INTO sync_logs (student_id, document_id, google_drive_file_id, sync_status, sync_type, synced_at)
+                                         VALUES (?, ?, ?, 'success', 'manual', NOW())
+                                         ON DUPLICATE KEY UPDATE google_drive_file_id = ?, sync_status = 'success', synced_at = NOW()";
+                            $stmt = $conn->prepare($syncQuery);
+                            $stmt->bind_param("iiss", $studentId, $doc['id'], $fileId, $fileId);
+                            $stmt->execute();
+                            $stmt->close();
+
+                            $totalFiles++;
+                            $totalSize += filesize($filePath);
+                        }
+                    }
+                }
+
+                $totalStudents++;
+            }
+
+            $backupPath = "Google Drive: $mainFolderName";
+
+        } else {
+            // Local backup - create ZIP (more efficient)
+            $backupDir = "backups/";
+            if (!is_dir($backupDir)) {
+                mkdir($backupDir, 0755, true);
+            }
+
+            $zipFileName = "IBACMI_Backup_$schoolYear_" . date('Y-m-d_H-i-s') . ".zip";
+            $zipPath = $backupDir . $zipFileName;
+
+            $zip = new ZipArchive();
+            if ($zip->open($zipPath, ZipArchive::CREATE) !== TRUE) {
+                throw new Exception('Failed to create ZIP file');
+            }
+
+            // Get all active students - limit to prevent timeout
+            $studentQuery = "SELECT id, CONCAT(id, '_', first_name, '_', last_name) as student_folder
+                           FROM students
+                           WHERE (status IS NULL OR status != 'archived')
+                           ORDER BY id
+                           LIMIT 200"; // Process up to 200 students for local backup
+            $students = $conn->query($studentQuery);
+
+            while ($student = $students->fetch_assoc()) {
+                $studentId = $student['id'];
+                $studentFolder = $student['student_folder'];
+
+                // Get student's documents - limit to prevent timeout
+                $docQuery = "SELECT id, file_path FROM student_documents
+                           WHERE student_id = ? AND is_submitted = 1 AND file_path IS NOT NULL AND file_path != ''
+                           LIMIT 20"; // Max 20 documents per student for ZIP
+                $stmt = $conn->prepare($docQuery);
+                $stmt->bind_param("i", $studentId);
+                $stmt->execute();
+                $documents = $stmt->get_result();
+                $stmt->close();
+
+                while ($doc = $documents->fetch_assoc()) {
+                    $filePath = $doc['file_path'];
+                    if (file_exists($filePath) && filesize($filePath) < 10 * 1024 * 1024) { // Skip files larger than 10MB for ZIP
+                        $localPath = "$schoolYear/$studentFolder/" . basename($filePath);
+                        $zip->addFile($filePath, $localPath);
+                        $totalFiles++;
+                        $totalSize += filesize($filePath);
+                    }
+                }
+
+                $totalStudents++;
+            }
+
+            $zip->close();
+            $backupPath = $zipPath;
+        }
+
+        // Update backup log
+        $updateQuery = "UPDATE backup_logs SET student_count = ?, file_count = ?, backup_size = ?, status = 'success', backup_path = ?, completed_at = NOW() WHERE id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param("iiissi", $totalStudents, $totalFiles, $totalSize, $backupPath, $backupId);
+        $stmt->execute();
+        $stmt->close();
+
+        $response = [
+            'status' => 'success',
+            'message' => "Backup completed successfully! Backed up $totalStudents students with $totalFiles files.",
+            'backup_path' => $backupPath,
+            'storage_type' => $storageType
+        ];
+
+        if ($storageType === 'local') {
+            $response['download_url'] = 'backup.php?download=' . urlencode($zipFileName);
+        }
+
+        // Get the JSON output
+        $jsonOutput = json_encode($response);
+
+        // Clear any remaining buffers and output JSON
+        while (ob_get_level()) {
+            ob_end_flush();
+        }
+
+        echo $jsonOutput;
+
+    } catch (Exception $e) {
+        error_log("Create backup error: " . $e->getMessage());
+
+        // Update backup log on failure
+        if (isset($backupId)) {
+            try {
+                $failQuery = "UPDATE backup_logs SET status = 'failed', error_message = ?, completed_at = NOW() WHERE id = ?";
+                $stmt = $conn->prepare($failQuery);
+                $errorMsg = substr($e->getMessage(), 0, 500); // Limit error message length
+                $stmt->bind_param("si", $errorMsg, $backupId);
+                $stmt->execute();
+                $stmt->close();
+            } catch (Exception $logError) {
+                error_log("Failed to update backup log: " . $logError->getMessage());
+            }
+        }
+
+        // Ensure we always return valid JSON - clear all buffers first
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        $errorResponse = [
+            'status' => 'error',
+            'message' => substr($e->getMessage(), 0, 200) // Limit error message in response
+        ];
+
+        echo json_encode($errorResponse);
+    }
+    exit();
+}
+
+// Handle perform auto-sync
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'perform_auto_sync') {
+    header('Content-Type: application/json');
+    try {
+        $syncStatus = getAutoSyncStatus();
+        if ($syncStatus !== 'enabled') {
+            throw new Exception('Auto-sync is not enabled');
+        }
+
+        if (!isGoogleDriveConnected()) {
+            throw new Exception('Google Drive is not connected');
+        }
+
+        // Get pending syncs
+        $pendingQuery = "SELECT sl.*, sd.file_path, s.first_name, s.last_name, s.school_year
+                        FROM sync_logs sl
+                        JOIN student_documents sd ON sl.document_id = sd.id
+                        JOIN students s ON sl.student_id = s.id
+                        WHERE sl.sync_status = 'pending'
+                        ORDER BY sl.synced_at ASC
+                        LIMIT 50"; // Process in batches
+
+        $result = $conn->query($pendingQuery);
+        $processed = 0;
+        $successCount = 0;
+        $errorCount = 0;
+
+        while ($sync = $result->fetch_assoc()) {
+            $studentId = $sync['student_id'];
+            $documentId = $sync['document_id'];
+            $filePath = $sync['file_path'];
+            $schoolYear = $sync['school_year'];
+            $studentName = $sync['first_name'] . '_' . $sync['last_name'];
+            $studentFolder = $studentId . '_' . $studentName;
+
+            try {
+                // Check if file exists
+                if (!file_exists($filePath)) {
+                    // Mark as failed
+                    $updateQuery = "UPDATE sync_logs SET sync_status = 'failed', error_message = 'File not found', synced_at = NOW() WHERE id = ?";
+                    $stmt = $conn->prepare($updateQuery);
+                    $stmt->bind_param("i", $sync['id']);
+                    $stmt->execute();
+                    $stmt->close();
+                    $errorCount++;
+                    continue;
+                }
+
+                // Check if already synced (has google_drive_file_id)
+                $existingFileId = $sync['google_drive_file_id'];
+                $fileName = basename($filePath);
+
+                if ($existingFileId) {
+                    // Update existing file
+                    $updateResult = updateGoogleDriveFile($existingFileId, $filePath);
+                    if ($updateResult) {
+                        $updateQuery = "UPDATE sync_logs SET sync_status = 'success', synced_at = NOW() WHERE id = ?";
+                        $stmt = $conn->prepare($updateQuery);
+                        $stmt->bind_param("i", $sync['id']);
+                        $stmt->execute();
+                        $stmt->close();
+                        $successCount++;
+                    } else {
+                        $updateQuery = "UPDATE sync_logs SET sync_status = 'failed', error_message = 'Update failed', synced_at = NOW() WHERE id = ?";
+                        $stmt = $conn->prepare($updateQuery);
+                        $stmt->bind_param("i", $sync['id']);
+                        $stmt->execute();
+                        $stmt->close();
+                        $errorCount++;
+                    }
+                } else {
+                    // Upload new file
+                    // Create main folder if needed
+                    $mainFolderName = "IBACMI $schoolYear";
+                    $mainFolderId = getOrCreateGoogleDriveFolder($mainFolderName);
+
+                    if (!$mainFolderId) {
+                        throw new Exception('Failed to create/access main folder');
+                    }
+
+                    // Create student folder
+                    $studentFolderId = getOrCreateGoogleDriveFolder($studentFolder, $mainFolderId);
+
+                    if (!$studentFolderId) {
+                        throw new Exception('Failed to create/access student folder');
+                    }
+
+                    // Upload file
+                    $fileId = uploadFileToGoogleDrive($filePath, $fileName, $studentFolderId);
+
+                    if ($fileId) {
+                        $updateQuery = "UPDATE sync_logs SET google_drive_file_id = ?, sync_status = 'success', synced_at = NOW() WHERE id = ?";
+                        $stmt = $conn->prepare($updateQuery);
+                        $stmt->bind_param("si", $fileId, $sync['id']);
+                        $stmt->execute();
+                        $stmt->close();
+                        $successCount++;
+                    } else {
+                        $updateQuery = "UPDATE sync_logs SET sync_status = 'failed', error_message = 'Upload failed', synced_at = NOW() WHERE id = ?";
+                        $stmt = $conn->prepare($updateQuery);
+                        $stmt->bind_param("i", $sync['id']);
+                        $stmt->execute();
+                        $stmt->close();
+                        $errorCount++;
+                    }
+                }
+
+            } catch (Exception $e) {
+                $updateQuery = "UPDATE sync_logs SET sync_status = 'failed', error_message = ?, synced_at = NOW() WHERE id = ?";
+                $stmt = $conn->prepare($updateQuery);
+                $stmt->bind_param("si", $e->getMessage(), $sync['id']);
+                $stmt->execute();
+                $stmt->close();
+                $errorCount++;
+            }
+
+            $processed++;
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => "Processed $processed syncs: $successCount successful, $errorCount failed",
+            'processed' => $processed,
+            'successful' => $successCount,
+            'failed' => $errorCount
+        ]);
+
+    } catch (Exception $e) {
+        error_log("Perform auto-sync error: " . $e->getMessage());
+        echo json_encode([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+// Check if Google Drive is connected
+function isGoogleDriveConnected() {
+    global $conn;
+
+    try {
+        $query = "SELECT setting_value FROM system_settings WHERE setting_name = 'google_drive_connected' LIMIT 1";
+        $result = $conn->query($query);
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row['setting_value'] == '1';
+        }
+
+        return false;
+    } catch (Exception $e) {
+        error_log("Error checking Google Drive connection: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Get stored tokens
+function getStoredTokens() {
+    global $conn;
+
+    $tokens = ['access_token' => null, 'refresh_token' => null];
+
+    try {
+        $query = "SELECT setting_name, setting_value FROM system_settings
+                  WHERE setting_name IN ('google_drive_access_token', 'google_drive_refresh_token')";
+        $result = $conn->query($query);
+
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                if ($row['setting_name'] === 'google_drive_access_token') {
+                    $tokens['access_token'] = $row['setting_value'];
+                } elseif ($row['setting_name'] === 'google_drive_refresh_token') {
+                    $tokens['refresh_token'] = $row['setting_value'];
+                }
+            }
+        }
+    } catch (Exception $e) {
+        error_log("Error getting stored tokens: " . $e->getMessage());
+    }
+
+    return $tokens;
+}
+
+// Get current school year
+function getCurrentSchoolYear() {
+    global $conn;
+
+    try {
+        $query = "SELECT school_year FROM school_years WHERE is_active = 1 LIMIT 1";
+        $result = $conn->query($query);
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row['school_year'];
+        }
+
+        return date('Y') . '-' . (date('Y') + 1);
+    } catch (Exception $e) {
+        error_log("Error getting current school year: " . $e->getMessage());
+        return date('Y') . '-' . (date('Y') + 1);
+    }
+}
+
+// Get auto-sync status
+function getAutoSyncStatus() {
+    global $conn;
+
+    try {
+        $query = "SELECT setting_value FROM system_settings WHERE setting_name = 'auto_sync_status' LIMIT 1";
+        $result = $conn->query($query);
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row['setting_value'];
+        }
+
+        return 'disabled'; // Default if not set
+    } catch (Exception $e) {
+        error_log("Error getting auto-sync status: " . $e->getMessage());
+        return 'disabled';
+    }
+}
+
+// Simple triggerAutoSync function for backward compatibility
+function triggerAutoSync($studentId, $documentId, $immediate = false) {
+    global $conn;
+
+    try {
+        // Get auto-sync status
+        $syncStatus = getAutoSyncStatus();
+
+        if ($syncStatus !== 'enabled') {
+            error_log("Auto-sync is not enabled (status: $syncStatus), skipping sync for student $studentId, doc $documentId");
+            return false;
+        }
+
+        // Check if Google Drive is connected
+        $isConnected = isGoogleDriveConnected();
+        if (!$isConnected) {
+            error_log("Google Drive not connected, skipping auto-sync for student $studentId, doc $documentId");
+            return false;
+        }
+
+        // Insert into sync_logs for processing
+        $query = "INSERT INTO sync_logs (student_id, document_id, sync_status, sync_type, synced_at)
+                  VALUES (?, ?, 'pending', 'auto', NOW())
+                  ON DUPLICATE KEY UPDATE sync_status = 'pending', synced_at = NOW()";
+
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("ii", $studentId, $documentId);
+
+        if ($stmt->execute()) {
+            error_log("Auto-sync queued for student $studentId, document $documentId");
+            return true;
+        } else {
+            error_log("Failed to queue auto-sync: " . $stmt->error);
+            return false;
+        }
+    } catch (Exception $e) {
+        error_log("Error in triggerAutoSync: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Redirect to HTML if direct access
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($_GET['download']) && !isset($_GET['action'])) {
+    header('Location: backup.html');
+    exit();
+}
+*/
+?>

@@ -1,0 +1,93 @@
+/* Bootstrap 5.3.3 Core Styles - Minimal Required */
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif;font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#fff}
+
+/* Container */
+.container,.container-fluid{width:100%;padding-right:12px;padding-left:12px;margin-right:auto;margin-left:auto}
+.container-fluid{max-width:none}
+
+/* Grid System */
+.row{display:flex;flex-wrap:wrap;margin-right:-12px;margin-left:-12px}
+.col,.col-md-6,.col-lg-4,.col-lg-3,.col-lg-2{position:relative;width:100%;padding-right:12px;padding-left:12px}
+.col{flex:1 0 0%}
+.col-md-6{flex:0 0 auto;width:50%}
+.col-lg-2{flex:0 0 auto;width:16.666667%}
+.col-lg-3{flex:0 0 auto;width:25%}
+.col-lg-4{flex:0 0 auto;width:33.333333%}
+
+/* Display utilities */
+.d-flex{display:flex!important}
+.d-none{display:none!important}
+.align-items-center{align-items:center!important}
+.justify-content-between{justify-content:space-between!important}
+.justify-content-center{justify-content:center!important}
+.flex-column{flex-direction:column!important}
+.flex-wrap{flex-wrap:wrap!important}
+
+/* Text utilities */
+.text-center{text-align:center!important}
+.text-muted{color:#6c757d!important}
+.text-white{color:#fff!important}
+.fw-bold{font-weight:700!important}
+.fs-6{font-size:0.875rem!important}
+
+/* Spacing */
+.p-0{padding:0!important}
+.p-3{padding:1rem!important}
+.m-0{margin:0!important}
+.mb-0{margin-bottom:0!important}
+.mb-3{margin-bottom:1rem!important}
+.mb-4{margin-bottom:1.5rem!important}
+.me-2{margin-right:0.5rem!important}
+.me-3{margin-right:1rem!important}
+.mt-4{margin-top:1.5rem!important}
+.mt-auto{margin-top:auto!important}
+
+/* Nav */
+.nav{display:flex;flex-wrap:wrap;padding-left:0;margin-bottom:0;list-style:none}
+.nav-link{display:block;padding:0.5rem 1rem;color:#0d6efd;text-decoration:none;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out}
+.nav-link:hover{color:#0a58ca}
+
+/* Buttons */
+.btn{display:inline-block;font-weight:400;line-height:1.5;color:#212529;text-align:center;text-decoration:none;vertical-align:middle;cursor:pointer;border:1px solid transparent;padding:0.375rem 0.75rem;font-size:1rem;border-radius:0.375rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out}
+.btn-primary{color:#fff;background-color:#0d6efd;border-color:#0d6efd}
+.btn-primary:hover{color:#fff;background-color:#0b5ed7;border-color:#0a58ca}
+.btn-secondary{color:#fff;background-color:#6c757d;border-color:#6c757d}
+.btn-close{box-sizing:content-box;width:1em;height:1em;padding:0.25em 0.25em;color:#000;background:transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='m.235.757 14.014 14.009c.174.174.439.174.613 0l.354-.354c.174-.174.174-.439 0-.613L1.207.793C1.032.619.767.619.593.793L.239 1.147c-.175.174-.175.439 0 .613z'/%3e%3cpath d='m14.986.757-14.014 14.009c-.174.174-.174.439 0 .613l.354.354c.174.174.439.174.613 0L15.946 1.723c.174-.174.174-.439 0-.613L15.592.756c-.174-.174-.439-.174-.613 0z'/%3e%3c/svg%3e") center/1em auto no-repeat;border:0;border-radius:0.375rem;opacity:.5}
+
+/* Modal */
+.modal{position:fixed;top:0;left:0;z-index:1055;display:none;width:100%;height:100%;overflow-x:hidden;overflow-y:auto;outline:0}
+.modal-dialog{position:relative;width:auto;margin:0.5rem;pointer-events:none}
+.modal-content{position:relative;display:flex;flex-direction:column;width:100%;pointer-events:auto;background-color:#fff;background-clip:padding-box;border:1px solid rgba(0,0,0,.125);border-radius:0.5rem;outline:0}
+.modal-header{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;padding:1rem 1rem;border-bottom:1px solid #dee2e6;border-top-left-radius:calc(0.5rem - 1px);border-top-right-radius:calc(0.5rem - 1px)}
+.modal-body{position:relative;flex:1 1 auto;padding:1rem}
+.modal-footer{display:flex;flex-wrap:wrap;flex-shrink:0;align-items:center;justify-content:flex-end;padding:0.75rem;border-top:1px solid #dee2e6;border-bottom-right-radius:calc(0.5rem - 1px);border-bottom-left-radius:calc(0.5rem - 1px)}
+.modal-lg{max-width:800px}
+
+/* Form controls */
+.form-control{display:block;width:100%;padding:0.375rem 0.75rem;font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#fff;background-image:none;border:1px solid #ced4da;appearance:none;border-radius:0.375rem;transition:border-color .15s ease-in-out,box-shadow .15s ease-in-out}
+.form-control:focus{color:#212529;background-color:#fff;border-color:#86b7fe;outline:0;box-shadow:0 0 0 0.25rem rgba(13,110,253,.25)}
+.form-check{display:block;min-height:1.5rem;padding-left:1.5em;margin-bottom:0.125rem}
+.form-check .form-check-input{float:left;margin-left:-1.5em}
+.form-check-input{width:1em;height:1em;margin-top:0.25em;vertical-align:top;background-color:#fff;background-repeat:no-repeat;background-position:center;background-size:contain;border:1px solid rgba(0,0,0,.25);appearance:none;border-radius:0.25em}
+.form-label{margin-bottom:0.5rem;font-weight:500}
+
+/* Alert */
+.alert{position:relative;padding:0.75rem 1.25rem;margin-bottom:1rem;border:1px solid transparent;border-radius:0.375rem}
+.alert-success{color:#0f5132;background-color:#d1e7dd;border-color:#badbcc}
+.alert-danger{color:#842029;background-color:#f8d7da;border-color:#f5c2c7}
+.alert-dismissible{padding-right:3rem}
+.alert-dismissible .btn-close{position:absolute;top:0;right:0;z-index:2;padding:0.9375rem 1.25rem}
+
+/* Table */
+.table{width:100%;margin-bottom:1rem;color:#212529;vertical-align:top}
+.table>:not(caption)>*>*{padding:0.5rem 0.5rem;background-color:var(--bs-table-bg);border-bottom-width:1px}
+.table-responsive{overflow-x:auto}
+
+/* Badge */
+.badge{display:inline-block;padding:0.35em 0.65em;font-size:0.75em;font-weight:700;line-height:1;color:#fff;text-align:center;white-space:nowrap;vertical-align:baseline;border-radius:0.375rem}
+
+/* Fade animation */
+.fade{transition:opacity .15s linear}
+.fade:not(.show){opacity:0}
+.show{opacity:1}

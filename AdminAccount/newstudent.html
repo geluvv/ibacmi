@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBACMI - Registrar Document Online Data Bank</title>
+ <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+    <!-- Replace CDN with local -->
+    <link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="css/sidebar.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Client-side OCR and PDF libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary: #800000;
+            --primary-hover: #6a0000;
+            --primary-light: rgba(128, 0, 0, 0.1);
+            --secondary: #f8f9fa;
+            --accent: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --sidebar-bg: #f8f9fa;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --border-light: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --border-radius: 16px;
+            --border-radius-sm: 12px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Global focus outline prevention */
+        *:focus {
+            outline: none !important;
+        }
+
+        *:focus-visible {
+            outline: none !important;
+        }
+
+        /* Prevent browser default focus styling on navigation elements */
+        nav *, .nav *, .sidebar *, a:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+
+        /* Modern main content */
+        .main-content {
+            margin-left: 280px;
+            padding: 1rem;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            background: #f5f7fa;
+        }
+
+        /* Card-based design */
+        .form-container {
+            width: 100%;
+            max-width: 1400px;
+            height: 98vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header - Reduced padding */
+        .form-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #a00000 100%);
+            color: white;
+            padding: 1.8rem 2rem;
+            text-align: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .form-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .form-header h2 {
+            margin: 0 0 0.4rem 0;
+            font-size: 2rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Form content - Optimized spacing */
+        .form-content {
+            flex: 1;
+            padding: 1.8rem 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        /* Sections - Compact design */
+        .info-section, .upload-section {
+            background: #f8fafc;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-light);
+            flex-shrink: 0;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), #a00000);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .section-title h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* Form fields - Bigger */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            flex: 1;
+            align-items: start;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-field.full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Name column styling */
+        .name-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            grid-column: 1 / -1;
+        }
+
+        .name-column .form-field {
+            width: 100%;
+        }
+
+        .name-column .form-input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .required-indicator {
+            color: var(--danger);
+            margin-left: 0.25rem;
+        }
+
+        .form-input, .form-select {
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9rem;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+        }
+
+        /* Upload section - Bigger */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            flex: 1;
+            align-content: start;
+            min-height: 400px; /* Fixed minimum height */
+        }
+
+        .upload-item {
+            background: white;
+            border-radius: var(--border-radius-sm);
+            border: 2px dashed var(--border-light);
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            height: 140px; /* Fixed height to prevent shifting */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .upload-item:hover {
+            border-color: var(--primary);
+            background: rgba(128, 0, 0, 0.02);
+        }
+
+        .upload-item.uploaded {
+            border-color: var(--accent);
+            background: rgba(40, 167, 69, 0.05);
+            border-style: solid;
+        }
+
+        .upload-icon {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-item.uploaded .upload-icon {
+            color: var(--accent);
+        }
+
+        .upload-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .upload-item.uploaded .upload-text {
+            color: var(--accent);
+        }
+
+        .upload-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .photo-upload {
+            grid-column: 1 / -1;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        /* Submit button - Bigger */
+        .submit-container {
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, #a00000 100%);
+            color: white;
+            border: none;
+            padding: 0.9rem 2rem;
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(128, 0, 0, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading state for upload items */
+        .upload-item.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        /* Enhanced validation feedback styles */
+        .upload-item.validating {
+            border-color: #17a2b8 !important;
+            background-color: rgba(23, 162, 184, 0.05) !important;
+            border-style: dashed !important;
+        }
+        
+        .validation-status {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .validation-status.valid {
+            background-color: #28a745;
+        }
+        
+        .validation-status.invalid {
+            background-color: #dc3545;
+        }
+        
+        .validation-status.warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .progress {
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .file-info {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        /* Animation for validation states */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .upload-item.uploaded {
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .upload-item.invalid {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Progress indicator */
+        .validation-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #e9ecef;
+            overflow: hidden;
+        }
+
+        .validation-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #17a2b8);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Marriage certificate disabled state */
+        .upload-item.marriage-upload.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            pointer-events: none;
+        }
+
+        .upload-item.marriage-upload.disabled .upload-text {
+            color: #6c757d;
+        }
+
+        .upload-item.marriage-upload.disabled .upload-icon {
+            color: #6c757d;
+        }
+
+        /* Keep checkbox container interactive even when upload is disabled */
+        .marriage-required-container {
+            pointer-events: auto !important;
+        }
+
+        /* Fixed upload grid to prevent layout shifts */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            flex: 1;
+            align-content: start;
+            min-height: 400px; /* Fixed minimum height */
+        }
+
+        .upload-item {
+            background: white;
+            border-radius: var(--border-radius-sm);
+            border: 2px dashed var(--border-light);
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            height: 140px; /* Fixed height to prevent shifting */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* File info container with fixed positioning */
+        .file-info {
+            position: absolute;
+            bottom: 0.5rem;
+            left: 0.5rem;
+            right: 0.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 6px;
+            padding: 0.25rem;
+            font-size: 0.7rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            max-height: 60px;
+            overflow: hidden;
+        }
+
+        /* Simplified validation states */
+        .upload-item.uploaded .upload-text {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-item.uploaded .file-info {
+            display: block;
+        }
+
+        .upload-item:not(.uploaded) .file-info {
+            display: none;
+        }
+
+        /* Validation status positioning */
+        .validation-status {
+            position: absolute;
+            top: 8px;
+            left: 8px; /* Move to left to avoid conflict with marriage checkbox */
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            z-index: 5;
+        }
+
+        /* Browser-specific focus outline fixes */
+        /* Chrome/Safari/Edge */
+        .sidebar *::-webkit-focus-ring {
+            outline: none !important;
+        }
+
+        /* Firefox */
+        .sidebar *::-moz-focus-inner {
+            border: 0 !important;
+            outline: none !important;
+        }
+
+        /* Internet Explorer/Edge Legacy */
+        .sidebar *:-ms-input-placeholder {
+            outline: none !important;
+        }
+
+        /* Ensure no focus styling leaks through */
+        .sidebar a:focus,
+        .sidebar button:focus,
+        .sidebar *[tabindex]:focus {
+            outline: none !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        /* SweetAlert2 custom width for warning messages */
+        .swal-wide {
+            width: 600px !important;
+        }
+
+        .swal2-html-container ul {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <nav class="sidebar">
+            <div class="brand-container d-flex align-items-center">
+                <img src="../photos/IBAlogo.png" alt="IBACMI Logo" class="me-3" style="width: 40px;">
+                <div class="brand-text">
+                    <h5 class="mb-0 fw-bold">IBACMI</h5>
+                    <span class="text-muted fs-6">Registrar Document Online Data Bank</span>
+                </div>
+            </div>
+
+            <div class="menu-bar mt-4">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php">
+                            <i class="fas fa-th-large"></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="Document.php">
+                            <i class="fas fa-file-alt"></i>
+                            <span class="nav-text">Student Records</span>
+                        </a>
+                    </li>
+                    <li class="nav-item active position-relative">
+                        <a class="nav-link active" href="#">
+                            <div class="nav-link-content">
+                                <i class="fas fa-user-graduate"></i>
+                                <span class="nav-text" style="white-space: nowrap;">Student Management</span>
+                            </div>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </a>
+                        <ul class="nav flex-column submenu">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="newstudent.html">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span class="nav-text">New Student</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="transferee.html">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span class="nav-text">Transferee</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lackingofdoc.php">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span class="nav-text">Lacking Documents</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="completedoc.php">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span class="nav-text">Complete Documents</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="backup.html">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span class="nav-text">Backup</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="userrequest.html">
+                            <i class="fas fa-inbox"></i>
+                            <span class="nav-text">User Request</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bottom-content">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="usersmanual.html">
+                            <i class="fas fa-book"></i>
+                            <span class="nav-text">User Manual</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="landingpage.html">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="nav-text">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="main-content">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2><i class="fas fa-user-plus"></i> Add New Student</h2>
+                    <p>Complete the form below to register a new student</p>
+                </div>
+
+                <form id="newStudentForm" action="newstudent.php" method="POST" enctype="multipart/form-data">
+                    <div class="form-content">
+                        <!-- Student Information Section -->
+                        <div class="info-section">
+                            <div class="section-title">
+                                <div class="section-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <h3>Student Information</h3>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-field full-width">
+                                    <label class="form-label">
+                                        Student ID <span class="required-indicator">*</span>
+                                    </label>
+                                    <input type="text" name="studentID" placeholder="Enter student ID" required class="form-input">
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="form-label">
+                                        Course <span class="required-indicator">*</span>
+                                    </label>
+                                    <select name="studentCourse" required class="form-select">
+                                        <option value="">Select course</option>
+                                        <option value="BSIT">BSIT</option>
+                                        <option value="BSCRIM">BSCRIM</option>
+                                        <option value="BEED">BEED</option>
+                                        <option value="BECED">BECED</option>
+                                        <option value="BPA">BPA</option>
+                                        <option value="BSE">BSE</option>
+                                        <option value="BSHM">BSHM</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="form-label">
+                                        Year Level <span class="required-indicator">*</span>
+                                    </label>
+                                    <select name="yearLevel" required class="form-select">
+                                        <option value="">Select year</option>
+                                        <option value="1">1st Year</option>
+                                        <option value="2">2nd Year</option>
+                                        <option value="3">3rd Year</option>
+                                        <option value="4">4th Year</option>
+                                    </select>
+                                </div>
+
+                                <!-- Name Fields Column -->
+                                <div class="name-column">
+                                    <div class="form-field">
+                                        <label class="form-label">
+                                            First Name <span class="required-indicator">*</span>
+                                        </label>
+                                        <input type="text" name="firstName" placeholder="First name" required class="form-input">
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label class="form-label">Middle Name</label>
+                                        <input type="text" name="middleName" placeholder="Middle name" class="form-input">
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label class="form-label">
+                                            Last Name <span class="required-indicator">*</span>
+                                        </label>
+                                        <input type="text" name="lastName" placeholder="Last name" required class="form-input">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documents Section -->
+                        <div class="upload-section">
+                            <div class="section-title">
+                                <div class="section-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <h3>Required Documents</h3>
+                            </div>
+
+                            <div class="upload-grid">
+                                <div class="upload-item" data-doc-type="card138">  <!-- Changed from "138" -->
+                                    <input type="file" name="card138" accept=".pdf,.docx,.jpg,.png" style="display: none;">
+                                    <div class="upload-title">Card 138</div>
+                                    <div class="upload-icon"><i class="fas fa-file-alt"></i></div>
+                                    <div class="upload-text">Click to upload</div>
+                                    <div class="validation-progress" style="display: none;">
+                                        <div class="validation-progress-bar"></div>
+                                    </div>
+                                </div>
+
+                                <div class="upload-item" data-doc-type="moral">
+                                    <input type="file" name="moralCert" accept=".pdf,.docx,.jpg,.png" style="display: none;">
+                                    <div class="upload-title">Good Moral</div>
+                                    <div class="upload-icon"><i class="fas fa-certificate"></i></div>
+                                    <div class="upload-text">Click to upload</div>
+                                    <div class="validation-progress" style="display: none;">
+                                        <div class="validation-progress-bar"></div>
+                                    </div>
+                                </div>
+
+                                <div class="upload-item" data-doc-type="birth">
+                                    <input type="file" name="birthCert" accept=".pdf,.docx,.jpg,.png" style="display: none;">
+                                    <div class="upload-title">Birth Certificate</div>
+                                    <div class="upload-icon"><i class="fas fa-id-card"></i></div>
+                                    <div class="upload-text">Click to upload</div>
+                                    <div class="validation-progress" style="display: none;">
+                                        <div class="validation-progress-bar"></div>
+                                    </div>
+                                </div>
+
+                                <div class="upload-item marriage-upload disabled" data-doc-type="marriage" data-required="false">
+                                    <input type="file" name="marriageCert" accept=".pdf,.docx,.jpg,.png" style="display: none;" disabled>
+                                    <div class="marriage-required-container" style="position: absolute; top: 8px; right: 8px; z-index: 10;">
+                                        <input type="checkbox" name="marriageRequired" id="marriageRequired" value="1">
+                                        <label for="marriageRequired">Required</label>
+                                    </div>
+                                    <div class="upload-title">Marriage Certificate</div>
+                                    <div class="upload-icon"><i class="fas fa-heart"></i></div>
+                                    <div class="upload-text">Check "Required" to enable upload</div>
+                                    <div class="upload-subtitle" style="font-size: 0.7rem; color: #999; margin-top: 0.25rem;">
+                                        Optional document
+                                    </div>
+                                    <div class="validation-progress" style="display: none;">
+                                        <div class="validation-progress-bar"></div>
+                                    </div>
+                                </div>
+
+                                <div class="upload-item photo-upload" data-doc-type="id">  <!-- Changed from "photo" -->
+                                    <input type="file" name="idPhoto" accept=".jpg,.png" style="display: none;">
+                                    <div class="upload-title">2x2 Picture</div>
+                                    <div class="upload-icon"><i class="fas fa-camera"></i></div>
+                                    <div class="upload-text">Click to upload photo</div>
+                                    <div class="validation-progress" style="display: none;">
+                                        <div class="validation-progress-bar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="submit-container">
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-paper-plane"></i> Submit New Student
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="js/sidebar-notifications.js"></script>
+    <script src="js/newstudent.js"></script>
+</body>
+</html>

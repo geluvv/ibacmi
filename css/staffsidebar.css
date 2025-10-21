@@ -1,0 +1,140 @@
+
+        :root {
+            --primary: #800000;
+            --primary-hover: #6a0000;
+            --sidebar-bg: #f8f9fa;
+            --text-dark: #343a40;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f7f9;
+            color: var(--text-dark);
+        }
+
+        /* Container Layout */
+        .container-fluid {
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            z-index: 100;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-container {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            padding: 0.8rem 1.5rem;
+            margin: 0.3rem 0.8rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--primary);
+            color: white !important;
+        }
+
+        .submenu {
+            margin-left: 2rem;
+            display: none;
+        }
+
+        .nav-item:hover .submenu {
+            display: block;
+        }
+
+        /* User Profile Styles */
+        .profile-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .profile-image {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-info h6 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .profile-role {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+        }
+
+        .edit-profile-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+         .main-content {
+            margin-left: 280px; /* Match sidebar width */
+            flex: 1;
+            padding: 2rem;
+            width: calc(100% - 280px); /* Subtract sidebar width */
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+              /* Profile Modal Styles */
+        .profile-upload-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .profile-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }

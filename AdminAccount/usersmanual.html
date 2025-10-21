@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBACMI - User Manual</title>
+     <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+    <!-- Replace CDN with local -->
+    <link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="css/sidebar.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #800000;
+            --primary-hover: #6a0000;
+            --sidebar-bg: #ffffff;
+            --text-dark: #343a40;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+        }
+        
+        
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        /* Updated Manual Content to match other pages */
+        .manual-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #a00000 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        .manual-header h1 {
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .manual-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .section-title {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+        }
+        
+        .section-title i {
+            margin-right: 12px;
+            font-size: 1.6rem;
+        }
+        
+        .feature-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .step-number {
+            background-color: var(--primary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+        
+        .alert-info {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+            color: #1976d2;
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <nav class="sidebar">
+            <div class="brand-container d-flex align-items-center">
+                <img src="../photos/IBAlogo.png" alt="IBACMI Logo" class="me-3">
+                <div class="brand-text">
+                    <h5 class="mb-0 fw-bold">IBACMI</h5>
+                    <span class="text-muted fs-6">Registrar Document Online Data Bank</span>
+                </div>
+            </div>
+            
+            <div class="menu-bar mt-4">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php">
+                            <i class="fas fa-th-large"></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="Document.php">
+                            <i class="fas fa-file-alt"></i>
+                            <span class="nav-text">Student Records</span>
+                        </a>
+                    </li>
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="#">
+                            <div class="nav-link-content">
+                                <i class="fas fa-user-graduate"></i>
+                                <span class="nav-text">Student Management</span>
+                            </div>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </a>
+                        <ul class="nav flex-column submenu">
+                            <li class="nav-item">
+                                <a class="nav-link" href="newstudent.html">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span class="nav-text">New Student</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="transferee.html">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span class="nav-text">Transferee</span>
+                                </a>
+                            </li>                            
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lackingofdoc.php">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span class="nav-text">Lacking Documents</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="completedoc.php">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span class="nav-text">Complete Documents</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="backup.html">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span class="nav-text">Backup</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="userrequest.html">
+                            <i class="fas fa-inbox"></i>
+                            <span class="nav-text">User Request</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bottom-content mt-auto">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="usersmanual.html">
+                            <i class="fas fa-book"></i>
+                            <span class="nav-text">User Manual</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="landingpage.html">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="nav-text">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        
+        <div class="main-content">
+            <div class="manual-header">
+                <h1><i class="fas fa-book me-3"></i>User Manual</h1>
+                <p class="mb-0 fs-5">IBACMI Registrar Document Online Data Bank</p>
+                <p class="mb-0">Administrator Guide</p>
+            </div>
+
+            <!-- Getting Started -->
+            <div class="manual-section">
+                <h2 class="section-title">
+                    <i class="fas fa-play-circle"></i>
+                    Getting Started
+                </h2>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Welcome to the IBACMI Registrar Document Online Data Bank. This system helps manage student records, documents, and administrative tasks efficiently.
+                </div>
+                <p>After successful login, administrators are directed to the Dashboard which provides an overview of the system with student charts and activity logs.</p>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="manual-section">
+                <h2 class="section-title">
+                    <i class="fas fa-th-large"></i>
+                    Dashboard
+                </h2>
+                <p>The Dashboard is your main control center that displays:</p>
+                <div class="feature-item">
+                    <div class="feature-title">Student Statistics Charts</div>
+                    <p>Visual representation of student enrollment, document completion rates, and other key metrics.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">Activity Logs</div>
+                    <p>Recent system activities, document uploads, and user actions for monitoring purposes.</p>
+                </div>
+            </div>
+
+            <!-- Student Records -->
+            <div class="manual-section">
+                <h2 class="section-title">
+                    <i class="fas fa-file-alt"></i>
+                    Student Records
+                </h2>
+                <p>Access and manage all student records through two main categories:</p>
+                <div class="feature-item">
+                    <div class="feature-title">Regular Students</div>
+                    <p>View comprehensive list of all regular enrolled students with their complete information and document status.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">Transferee Students</div>
+                    <p>Separate section for transfer students with their previous institution records and current status.</p>
+                </div>
+                <p class="mt-3"><strong>Features include:</strong> Search functionality, filtering options, document status tracking, and detailed student profiles.</p>
+            </div>
+
+            <!-- Student Management -->
+            <div class="manual-section">
+                <h2 class="section-title">
+                    <i class="fas fa-user-graduate"></i>
+                    Student Management
+                </h2>
+                <p>Add and manage student information through the dropdown menu options:</p>
+                
+                <h5 class="mt-4 mb-3"><i class="fas fa-user-plus me-2"></i>Add New Student</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><span class="step-number">1</span>Fill out student personal information</p>
+                        <p><span class="step-number">2</span>Upload required scanned documents</p>
+                        <p><span class="step-number">3</span>Verify information accuracy</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><span class="step-number">4</span>Submit for processing</p>
+                        <p><span class="step-number">5</span>Generate student ID and records</p>
+                    </div>
+                </div>
+
+                <h5 class="mt-4 mb-3"><i class="fas fa-user-plus me-2"></i>Add Transferee</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><span class="step-number">1</span>Enter previous institution details</p>
+                        <p><span class="step-number">2</span>Upload transfer credentials</p>
+                        <p><span class="step-number">3</span>Add current enrollment information</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><span class="step-number">4</span>Verify document authenticity</p>
+                        <p><span class="step-number">5</span>Complete transfer process</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Management -->
+            <div class="manual-section">
+                <h2 class="section-title">
+                    <i class="fas fa-folder-open"></i>
+                    Document Management
+                </h2>
+                
+                <div class="feature-item">
+                    <div class="feature-title"><i class="fas fa-exclamation-circle me-2"></i>Lacking Documents</div>
+                    <p>View and manage list of students who are missing required documents. Features include:</p>
+                    <ul>
+                        <li>Detailed list of missing documents per student</li>
+                        <li>Update Status anytime</li>
+                    </ul>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-title"><i class="fas fa-clipboard-check me-2"></i>Complete Documents</div>
+                    <p>Monitor students who have submitted all required documents:</p>
+                    <ul>
+                        <li>Generate completion certificates</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- User Requests -->
+            <div class="manual-section">
+                <h2 class="section-title">
+                    <i class="fas fa-inbox"></i>
+                    User Requests
+                </h2>
+                <p>Manage and process various user requests efficiently:</p>
+                
+                <div class="feature-item">
+                    <div class="feature-title">Request Type</div>
+                    <ul>
+                        <li>Account access requests</li>
+                    </ul>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-title">Actions Available</div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Approve Requests:</strong></p>
+                            <ul>
+                                <li>Review request details</li>
+                                <li>Verify eligibility</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Deny Requests:</strong></p>
+                            <ul>
+                                <li>Provide clear reasoning (Through Email)</li>
+                                <li>Suggest alternatives (Through Email)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Features -->
+            <div class="manual-section">
+                <h2 class="section-title">
+                    <i class="fas fa-cogs"></i>
+                    Additional System Features
+                </h2>
+                
+                <div class="feature-item">
+                    <div class="feature-title"><i class="fas fa-cloud-upload-alt me-2"></i>Backup System</div>
+                    <p>Secure data backup and recovery options to ensure data integrity and system reliability.</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-title"><i class="fas fa-search me-2"></i>Search & Filter</div>
+                    <p>Advanced search capabilities across all modules to quickly locate specific students or documents.</p>
+                </div>
+            </div>
+
+            <!-- Support -->
+            <div class="manual-section">
+                <h2 class="section-title">
+                    <i class="fas fa-question-circle"></i>
+                    Need Help?
+                </h2>
+                <div class="alert alert-info">
+                    <p class="mb-2"><strong>For technical support or questions:</strong></p>
+                    <p class="mb-1"><i class="fas fa-envelope me-2"></i>Email: itsbo2024@gmail.com</p>
+                    <p class="mb-1"><i class="fas fa-phone me-2"></i>Phone: 09609012716</p>
+                    <p class="mb-0"><i class="fas fa-clock me-2"></i>Support Hours: Monday-Friday, 11:00 AM - 3:00 PM</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/sidebar-notifications.js"></script>    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentLocation = window.location.pathname.split("/").pop();
+            const menuItems = document.querySelectorAll(".sidebar .nav-link");
+            
+            menuItems.forEach(item => {
+                item.classList.remove("active");
+            });
+            
+            menuItems.forEach(item => {
+                if (item.getAttribute("href") === currentLocation) {
+                    item.classList.add("active");
+                }
+            });
+        });
+    </script>
+
+    <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

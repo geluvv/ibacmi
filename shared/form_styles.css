@@ -1,0 +1,578 @@
+:root {
+    --primary: #800000;
+    --primary-hover: #6a0000;
+    --primary-light: rgba(128, 0, 0, 0.1);
+    --secondary: #f8f9fa;
+    --accent: #28a745;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --info: #17a2b8;
+    --text-dark: #2d3748;
+    --text-muted: #718096;
+    --border-light: #e2e8f0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --border-radius: 16px;
+    --border-radius-sm: 12px;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa;
+    margin: 0;
+    padding: 0;
+}
+
+/* Modern main content - MATCH NEWSTUDENT.HTML */
+.main-content {
+    margin-left: 280px;
+    padding: 1rem;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    background: #f5f7fa;
+}
+
+/* Card-based design - MATCH NEWSTUDENT.HTML */
+.form-container {
+    width: 100%;
+    max-width: 1400px;
+    height: 98vh;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header - MATCH NEWSTUDENT.HTML */
+.form-header {
+    background: linear-gradient(135deg, var(--primary) 0%, #a00000 100%);
+    color: white;
+    padding: 1.8rem 2rem;
+    text-align: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.form-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.form-header h2 {
+    margin: 0 0 0.4rem 0;
+    font-size: 2rem;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+}
+
+.form-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Form content - TWO COLUMN LAYOUT LIKE NEWSTUDENT.HTML */
+.form-body {
+    flex: 1;
+    padding: 1.8rem 2rem;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.form-content {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* Sections - MATCH NEWSTUDENT.HTML STYLING */
+.section-card {
+    background: #f8fafc;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    border: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-light);
+    flex-shrink: 0;
+}
+
+.section-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary), #a00000);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.section-title h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+/* Add section description styling */
+.section-description {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    font-style: italic;
+}
+
+/* Form fields - MATCH NEWSTUDENT.HTML */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.required-indicator {
+    color: var(--danger);
+    margin-left: 0.25rem;
+}
+
+.form-control, .form-select {
+    padding: 0.8rem 1rem;
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.9rem;
+    transition: var(--transition);
+    background: white;
+    width: 100%;
+}
+
+.form-control:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+}
+
+.form-control::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Upload section - MATCH NEWSTUDENT.HTML */
+.upload-section {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    flex: 1;
+    align-content: start;
+}
+
+.upload-item {
+    background: white;
+    border-radius: var(--border-radius-sm);
+    border: 2px dashed var(--border-light);
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.upload-item:hover {
+    border-color: var(--primary);
+    background: rgba(128, 0, 0, 0.02);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.upload-item.uploaded {
+    border-color: var(--accent);
+    background: rgba(40, 167, 69, 0.05);
+    border-style: solid;
+}
+
+.upload-item.invalid {
+    border-color: var(--danger);
+    background: rgba(220, 53, 69, 0.05);
+    border-style: solid;
+}
+
+.upload-item.validating {
+    border-color: var(--info);
+    background: rgba(23, 162, 184, 0.05);
+    border-style: solid;
+}
+
+.upload-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.upload-icon {
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.upload-text {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.validation-status {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.validation-status.valid {
+    background: var(--accent);
+    color: white;
+}
+
+.validation-status.invalid {
+    background: var(--danger);
+    color: white;
+}
+
+.validation-status.validating {
+    background: var(--info);
+    color: white;
+}
+
+.file-info {
+    margin-top: 0.3rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* 2x2 Picture - MATCH NEWSTUDENT.HTML */
+.upload-item.photo-upload {
+    grid-column: 1 / -1;
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+/* Optional document styling */
+.upload-item.optional-doc .upload-title::after {
+    content: ' (Optional)';
+    font-size: 0.65rem;
+    color: #6b7280;
+    font-weight: normal;
+    display: block;
+    margin-top: 0.2rem;
+}
+
+/* Submit button - CLEAN VERSION */
+.submit-section {
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.submit-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, #a00000 100%);
+    color: white;
+    border: none;
+    padding: 0.9rem 2rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 200px;
+    letter-spacing: 0.5px;
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(128, 0, 0, 0.3);
+    background: linear-gradient(135deg, #a00000 0%, var(--primary) 100%);
+}
+
+.submit-btn:active:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: var(--shadow);
+}
+
+.submit-btn i {
+    font-size: 1rem;
+}
+
+.submit-note {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.4;
+    margin-top: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 0.5rem;
+    }
+    
+    .form-container {
+        height: 98vh;
+    }
+    
+    .form-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .form-body {
+        padding: 1rem;
+    }
+    
+    .section-card {
+        padding: 1rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .upload-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .submit-btn {
+        font-size: 0.9rem;
+        padding: 0.75rem 1.8rem;
+        min-width: 160px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 0.3rem;
+    }
+    
+    .form-container {
+        height: 99vh;
+        border-radius: 12px;
+    }
+    
+    .form-header {
+        padding: 1.5rem 1rem;
+    }
+    
+    .form-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .form-body {
+        padding: 1rem;
+    }
+    
+    .section-card {
+        padding: 1rem;
+    }
+
+    .submit-btn {
+        font-size: 0.85rem;
+        padding: 0.7rem 1.5rem;
+        min-width: 150px;
+    }
+}
+
+/* Animation for success state */
+@keyframes checkmark {
+    0% { transform: scale(0) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(180deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+
+.upload-item.uploaded .upload-icon {
+    animation: checkmark 0.6s ease-in-out;
+}
+
+/* Enhanced error state */
+.upload-item.error {
+    border-color: #dc3545 !important;
+    background-color: #fff5f5 !important;
+    border-style: solid !important;
+    animation: shake 0.5s ease-in-out;
+}
+
+.upload-item.error .upload-icon {
+    color: #dc3545 !important;
+}
+
+.upload-item.error .upload-text {
+    color: #dc3545 !important;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Enhanced success state */
+.upload-item.uploaded {
+    border-color: #28a745 !important;
+    background-color: rgba(40, 167, 69, 0.05) !important;
+    border-style: solid !important;
+}
+
+.upload-item.uploaded .upload-icon {
+    color: #28a745 !important;
+    animation: checkmark 0.6s ease-in-out;
+}
+
+.upload-item.uploaded .upload-text {
+    color: #28a745 !important;
+    font-weight: 600;
+}
+
+/* Validation feedback styling */
+.validation-feedback {
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    display: none;
+    text-align: left;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Remove scrollbars from main content */
+body {
+    overflow: hidden;
+}
+
+.main-content {
+    overflow: hidden;
+}
+
+/* Only allow scrolling in upload section if needed */
+.upload-section {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+}
+
+.upload-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.upload-section::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.upload-section::-webkit-scrollbar-thumb {
+    background-color: var(--primary);
+    border-radius: 3px;
+}

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IBACMI Registrar Document Online Data Bank</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+     <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #8E1616;
+            --primary-light: #AF3030;
+            --primary-dark: #700D0D;
+            --secondary-color: #FFD7D7;
+            --accent-color: #FFB6B6;
+            --text-color: #555555;
+            --light-text: #888888;
+            --bg-color: #8E1616;
+            --card-bg: #FFFFFF;
+            --border-radius: 20px;
+            --input-radius: 15px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.25s ease;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: var(--bg-color);
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            padding: 20px;
+            background-image: radial-gradient(circle at 10% 20%, rgba(200, 50, 50, 0.15) 0%, rgba(142, 22, 22, 0.05) 80%);
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .login {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 28px;
+            margin-bottom: 25px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .login::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 3px;
+            background: var(--accent-color);
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 10px;
+        }
+
+        .card {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 450px;
+            width: 100%;
+            flex-direction: column;
+            gap: 15px;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+            padding: 35px 25px;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 100px;
+            height: 100px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            width: 80px;
+            height: 80px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .inputBox {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            margin-bottom: 20px;
+        }
+
+        .inputBox input {
+            width: 100%;
+            padding: 15px 45px 15px 20px;
+            border: 2px solid #EEEEEE;
+            color: var(--text-color);
+            font-size: 15px;
+            background: #F9F9F9;
+            border-radius: var(--input-radius);
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .inputBox i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-text);
+            font-size: 16px;
+        }
+
+        .inputBox span {
+            position: absolute;
+            left: 20px;
+            top: 15px;
+            pointer-events: none;
+            font-size: 14px;
+            color: var(--light-text);
+            transition: 0.3s;
+        }
+
+        .inputBox input:valid ~ span,
+        .inputBox input:focus ~ span {
+            transform: translateY(-25px);
+            font-size: 12px;
+            color: var(--primary-color);
+            background: var(--card-bg);
+            padding: 0 8px;
+            font-weight: 500;
+        }
+
+        .inputBox input:valid,
+        .inputBox input:focus {
+            border: 2px solid var(--primary-color);
+            background: #FFFFFF;
+        }
+
+        .inputBox input:valid ~ i,
+        .inputBox input:focus ~ i {
+            color: var(--primary-color);
+        }
+
+        .enter {
+            height: 50px;
+            width: 180px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            margin: 20px 0;
+            font-weight: 600;
+            box-shadow: 0 10px 20px rgba(142, 22, 22, 0.2);
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .enter:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(142, 22, 22, 0.3);
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--primary-color) 100%);
+        }
+
+        .logo-container {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, rgba(142, 22, 22, 0.1) 0%, rgba(175, 48, 48, 0.15) 100%);
+            padding: 15px;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(142, 22, 22, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-circle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #8E1616 0%, #700D0D 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 22px;
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: 1px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .links {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 350px;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .links label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--light-text);
+            font-size: 13px;
+        }
+
+        .links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .links input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .register {
+            text-align: center;
+            font-size: 15px;
+            margin-top: 15px;
+            width: 100%;
+            color: var(--light-text);
+        }
+
+        .register a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register a:hover {
+            text-decoration: underline;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            position: relative;
+        }
+        
+        .error-message {
+            color: #E53935;
+            font-size: 14px;
+            margin: 8px 0;
+            text-align: center;
+            display: none;
+            background-color: #FFEBEE;
+            padding: 10px 15px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 350px;
+            font-weight: 500;
+            border-left: 4px solid #E53935;
+        }
+
+        /* Floating elements */
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .circle1 {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.05);
+            top: 20%;
+            right: 15%;
+            animation: float 8s infinite alternate;
+        }
+        
+        .circle2 {
+            width: 30px;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.05);
+            bottom: 15%;
+            left: 10%;
+            animation: float 6s infinite alternate-reverse;
+        }
+        
+        .circle3 {
+            width: 25px;
+            height: 25px;
+            background-color: rgba(255, 255, 255, 0.05);
+            top: 30%;
+            left: 20%;
+            animation: float 10s infinite alternate;
+        }
+
+        /* Maroon stars pattern */
+        .star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                transform: translateY(20px) rotate(10deg);
+            }
+        }
+
+        /* BACK TO HOME BUTTON */
+        .back-to-home {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            text-decoration: none;
+        }
+
+        .back-to-home:hover {
+            transform: translateX(-5px) scale(1.1);
+            box-shadow: 0 6px 20px rgba(142, 22, 22, 0.3);
+        }
+
+        .back-to-home i {
+            color: var(--primary-color);
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-home:hover i {
+            color: var(--primary-dark);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .back-to-home {
+                top: 15px;
+                left: 15px;
+                width: 45px;
+                height: 45px;
+            }
+            
+            .back-to-home i {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 540px) {
+            .card {
+                padding: 25px 15px;
+            }
+            
+            .inputBox {
+                max-width: 300px;
+            }
+            
+            .enter {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- BACK TO HOME BUTTON -->
+    <a href="../index.html" class="back-to-home" title="Back to Home">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <div class="floating-element circle1"></div>
+    <div class="floating-element circle2"></div>
+    <div class="floating-element circle3"></div>
+    
+    <div class="container">
+        <div class="card">
+            <!-- FIXED LOGO -->
+            <div class="logo-container">
+                <div class="logo-circle">IBA</div>
+            </div>
+            
+            <a class="login">Staff</a>
+            <p>Login your staff account</p>
+            <div id="error-message" class="error-message"></div>
+            <form id="loginForm" action="stafflogin.php" method="POST">
+                <div class="inputBox">
+                    <input type="text" name="username" required>
+                    <span>Username</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="inputBox">
+                    <input type="password" name="password" required>
+                    <span>Password</span>
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="links">
+                    <label>
+                        <input type="checkbox" name="remember"> Remember me
+                    </label>
+                    <a href="forgot-password.html">Forgot Password?</a>
+                </div>
+                <button type="submit" class="enter">Login</button>
+            </form>
+            <div class="register">
+                Don't have an account? <a href="staffregister.html">Register</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Add stars to the background
+        function createStars() {
+            const body = document.body;
+            const starCount = 50;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Random positioning
+                const x = Math.floor(Math.random() * window.innerWidth);
+                const y = Math.floor(Math.random() * window.innerHeight);
+                
+                star.style.left = `${x}px`;
+                star.style.top = `${y}px`;
+                
+                // Random size (1-3px)
+                const size = 1 + Math.random() * 2;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                // Random opacity
+                star.style.opacity = 0.1 + Math.random() * 0.5;
+                
+                body.appendChild(star);
+            }
+        }
+        
+        // Call the function when the window loads
+        window.addEventListener('load', createStars);
+        
+        const form = document.querySelector("#loginForm");
+        const errorMessage = document.getElementById("error-message");
+        
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault(); // Prevent default form submission
+            
+            errorMessage.style.display = "none";
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch("stafflogin.php", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                if (result.status === "success") {
+                    window.location.href = "staffdashboard.php"; // Redirect to dashboard on success
+                } else {
+                    errorMessage.textContent = result.message || "Invalid username or password";
+                    errorMessage.style.display = "block";
+                }
+            } catch (error) {
+                console.error("Error during login:", error);
+                errorMessage.textContent = "An error occurred: " + error.message;
+                errorMessage.style.display = "block";
+            }
+        });
+
+        // Add this to your login form's submit handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const formData = new FormData(e.target);
+                const response = await fetch('stafflogin.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    window.location.href = 'staffdashboard.php';
+                } else {
+                    // Show error message
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('An error occurred during login. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

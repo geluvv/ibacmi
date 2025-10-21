@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IBACMI - User Requests</title>
+   <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+  <!-- Replace CDN with local -->
+  <link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link href="css/sidebar.css" rel="stylesheet">
+    <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
+  <style>
+    :root {
+      --primary: #800000;
+      --primary-hover: #6a0000;
+      --sidebar-bg: #ffffff;
+      --text-dark: #343a40;
+      --border-radius: 12px;
+      --transition: all 0.3s ease;
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f8f9fa;
+      color: var(--text-dark);
+      margin: 0;
+      padding: 0;
+    }
+
+    .main-content {
+      margin-left: 280px;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    /* Header styles */
+    .header-card {
+      background: linear-gradient(135deg, var(--primary) 0%, #a00000 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 2rem;
+      box-shadow: var(--card-shadow);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .header-info h2 {
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .header-info p {
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    /* Tab styling */
+    .nav-tabs {
+      border-bottom: 2px solid #dee2e6;
+      margin-bottom: 2rem;
+    }
+
+    .nav-tabs .nav-link {
+      border: none;
+      color: #6c757d;
+      font-weight: 500;
+      padding: 1rem 1.5rem;
+      transition: var(--transition);
+      border-radius: 8px 8px 0 0;
+    }
+
+    .nav-tabs .nav-link:hover {
+      color: var(--primary);
+      background-color: rgba(128, 0, 0, 0.05);
+    }
+
+    .nav-tabs .nav-link.active {
+      color: var(--primary);
+      background-color: rgb(130, 3, 3);
+      border-bottom: 3px solid var(--primary);
+      font-weight: 600;
+    }
+
+    /* Grid Container for Request Cards */
+    .tab-content .container-fluid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 1.25rem;
+      padding: 0;
+    }
+
+    /* Request Card Styles */
+    .request-card {
+      background: white;
+      border-radius: var(--border-radius);
+      border: 1px solid #e8ecef;
+      transition: var(--transition);
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      height: fit-content;
+      max-width: 450px; /* Limit max width */
+    }
+
+    .request-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(128, 0, 0, 0.15);
+      border-color: rgba(128, 0, 0, 0.3);
+    }
+
+    .request-card-body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+    }
+
+    .request-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .request-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(128, 0, 0, 0.2);
+    }
+
+    .user-details h5 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .user-role {
+      font-size: 0.85rem;
+      color: #6c757d;
+      margin: 0;
+      text-transform: capitalize;
+    }
+
+    .request-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: #6c757d;
+    }
+
+    .meta-item i {
+      width: 18px;
+      color: var(--primary);
+      opacity: 0.7;
+    }
+
+    /* Status Badge */
+    .status-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .status-badge.pending {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffc107;
+    }
+
+    .status-badge.approved {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #28a745;
+    }
+
+    .status-badge.denied {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #dc3545;
+    }
+
+    /* ID Thumbnail Container */
+    .id-thumbnail-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      padding: 0.75rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+
+    .id-thumbnail {
+      width: 140px !important; /* Reduced from 180px */
+      height: 105px !important; /* Reduced from 140px */
+      object-fit: cover !important;
+      border-radius: 8px !important;
+      border: 2px solid #dee2e6 !important;
+      cursor: pointer !important;
+      transition: var(--transition) !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      display: block !important;
+      visibility: visible !important;
+      background: white !important;
+    }
+
+    .id-thumbnail:hover {
+      border-color: var(--primary) !important;
+      transform: scale(1.08) !important;
+      box-shadow: 0 4px 15px rgba(128, 0, 0, 0.25) !important;
+    }
+
+    /* Remove the view button styles since we're removing it */
+    .view-id-btn {
+      display: none !important;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e9ecef;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .btn-approve {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-approve:hover {
+      background: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-deny {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-deny:hover {
+      background: #c82333;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
+    /* Empty State */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #6c757d;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      color: #dee2e6;
+      margin-bottom: 1rem;
+    }
+
+    .empty-state h5 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-dark);
+    }
+
+    .empty-state p {
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.95);
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .modal .close {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 10000;
+      transition: var(--transition);
+    }
+
+    .modal .close:hover {
+      color: #ccc;
+      transform: scale(1.1);
+    }
+
+    .modal-content {
+      position: relative;
+      margin: 5% auto;
+      display: block;
+      max-width: 70%; /* Reduced from 90% */
+      max-height: 75vh; /* Reduced from 85vh */
+    }
+
+    .modal-content img {
+      width: 100%;
+      height: auto;
+      max-height: 75vh; /* Match container */
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+      background: white;
+      padding: 10px;
+    }
+
+    /* Loading Spinner */
+    .spinner-border {
+      width: 3rem;
+      height: 3rem;
+      border-width: 0.3rem;
+    }
+
+    .text-primary {
+      color: var(--primary) !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .tab-content .container-fluid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      }
+      
+      .modal-content {
+        max-width: 85%;
+        max-height: 80vh;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        margin-left: 0;
+        padding: 1rem;
+      }
+
+      .tab-content .container-fluid {
+        grid-template-columns: 1fr;
+      }
+
+      .request-card {
+        max-width: 100%;
+      }
+
+      .request-card-body {
+        padding: 1rem;
+      }
+
+      .id-thumbnail {
+        width: 120px !important;
+        height: 90px !important;
+      }
+
+      .modal-content {
+        max-width: 95%;
+        max-height: 85vh;
+      }
+    }
+</style>
+</head>
+<body>
+  <div class="container-fluid p-0">
+    <nav class="sidebar">
+      <div class="brand-container d-flex align-items-center">
+        <img src="../photos/IBAlogo.png" alt="IBACMI Logo" class="me-3">
+        <div class="brand-text">
+          <h5 class="mb-0 fw-bold">IBACMI</h5>
+          <span class="text-muted fs-6">Registrar Document Online Data Bank</span>
+        </div>
+      </div>
+
+      <div class="menu-bar mt-4">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="dashboard.php">
+              <i class="fas fa-th-large"></i>
+              <span class="nav-text">Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="Document.php">
+              <i class="fas fa-file-alt"></i>
+              <span class="nav-text">Student Records</span>
+            </a>
+          </li>
+          <li class="nav-item position-relative">
+            <a class="nav-link" href="#">
+              <div class="nav-link-content">
+                <i class="fas fa-user-graduate"></i>
+                <span class="nav-text">Student Management</span>
+              </div>
+              <i class="fas fa-chevron-down dropdown-icon"></i>
+            </a>
+            <ul class="nav flex-column submenu">
+              <li class="nav-item">
+                <a class="nav-link" href="newstudent.html">
+                  <i class="fas fa-user-plus"></i>
+                  <span class="nav-text">New Student</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="transferee.html">
+                  <i class="fas fa-user-plus"></i>
+                  <span class="nav-text">Transferee</span>
+                </a>
+              </li>                            
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="lackingofdoc.php">
+              <i class="fas fa-exclamation-circle"></i>
+              <span class="nav-text">Lacking Documents</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="completedoc.php">
+              <i class="fas fa-clipboard-check"></i>
+              <span class="nav-text">Complete Documents</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="backup.html">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span class="nav-text">Backup</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="userrequest.html">
+              <i class="fas fa-inbox"></i>
+              <span class="nav-text">User Request</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="bottom-content mt-auto">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="usersmanual.html">
+              <i class="fas fa-book"></i>
+              <span class="nav-text">User Manual</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="landingpage.html">
+              <i class="fas fa-sign-out-alt"></i>
+              <span class="nav-text">Logout</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content"> 
+      <div class="header-card">
+        <div class="header-content">
+          <div class="header-info">
+            <h2><i class="fas fa-inbox me-2"></i>User Requests</h2>
+            <p>Manage and process user access requests</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs mb-4" id="requestTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
+                  <i class="fas fa-clock me-2"></i>Pending
+              </button>
+          </li>
+          <li class="nav-item" role="presentation">
+              <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab" aria-controls="approved" aria-selected="false">
+                  <i class="fas fa-check-circle me-2"></i>Approved
+              </button>
+          </li>
+          <li class="nav-item" role="presentation">
+              <button class="nav-link" id="denied-tab" data-bs-toggle="tab" data-bs-target="#denied" type="button" role="tab" aria-controls="denied" aria-selected="false">
+                  <i class="fas fa-times-circle me-2"></i>Denied
+              </button>
+          </li>
+      </ul>
+
+      <!-- Tab Content -->
+      <div class="tab-content" id="requestTabsContent">
+          <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+              <div class="container-fluid ps-0 pe-0" id="pending-container">
+                  <!-- Pending requests will be loaded here -->
+              </div>
+          </div>
+          <div class="tab-pane fade" id="approved" role="tabpanel" aria-labelledby="approved-tab">
+              <div class="container-fluid ps-0 pe-0" id="approved-container">
+                  <!-- Approved requests will be loaded here -->
+              </div>
+          </div>
+          <div class="tab-pane fade" id="denied" role="tabpanel" aria-labelledby="denied-tab">
+              <div class="container-fluid ps-0 pe-0" id="denied-container">
+                  <!-- Denied requests will be loaded here -->
+              </div>
+          </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Image Modal -->
+  <div id="imageModal" class="modal">
+    <span class="close" onclick="closeModal()">×</span>
+    <div class="modal-content">
+      <img id="modalImage" src="" alt="User Provided ID">
+    </div>
+    <div id="caption" class="modal-caption"></div>
+  </div>
+
+  <script src="js/sidebar-notifications.js"></script>
+  <script>
+// Modal functions - Make sure these are defined FIRST
+const imageModal = document.getElementById('imageModal');
+const modalImage = document.getElementById('modalImage');
+const modalCaption = document.getElementById('caption');
+const closeModalBtn = document.querySelector('#imageModal .close');
+
+function openModal(imageSrc, captionText) {
+    console.log('🖼️ Opening modal with:', imageSrc);
+    
+    if (!imageModal || !modalImage || !modalCaption) {
+        console.error('❌ Modal elements not found!');
+        return;
+    }
+    
+    modalImage.src = imageSrc;
+    modalCaption.innerHTML = captionText;
+    imageModal.style.display = 'block';
+    
+    setTimeout(() => {
+        imageModal.style.opacity = '1';
+    }, 10);
+    
+    modalImage.onerror = function() {
+        console.error('❌ Modal image failed to load:', imageSrc);
+        this.src = '../photos/default-id.png';
+        modalCaption.innerHTML = captionText + ' (Image not available)';
+    };
+}
+
+function closeModal() {
+    if (!imageModal) return;
+    imageModal.style.opacity = '0';
+    setTimeout(() => {
+        imageModal.style.display = 'none';
+        if (modalImage) modalImage.src = '';
+    }, 300);
+}
+
+// Close modal when clicking outside the image
+if (imageModal) {
+    imageModal.onclick = function(event) {
+        if (event.target === imageModal) {
+            closeModal();
+        }
+    };
+}
+
+// Close modal with close button
+if (closeModalBtn) {
+    closeModalBtn.onclick = closeModal;
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+    }
+});
+
+async function loadAllStaffRequests() {
+    await Promise.all([
+        loadStaffByStatus('pending'),
+        loadStaffByStatus('approved'),
+        loadStaffByStatus('denied')
+    ]);
+}
+
+async function loadStaffByStatus(status) {
+    const container = document.getElementById(`${status}-container`);
+    if (!container) {
+        console.error(`❌ Container for ${status} not found`);
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading ${status} requests...</p>
+        </div>
+    `;
+    
+    try {
+        console.log(`📡 Fetching ${status} staff...`);
+        const response = await fetch(`../fetch_staff_by_status.php?status=${status}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        console.log(`📄 Raw response for ${status}:`, text.substring(0, 200));
+        
+        const result = JSON.parse(text);
+        console.log(`✅ Parsed result for ${status}:`, result);
+        
+        container.innerHTML = '';
+        
+        if (result.status === 'success') {
+            if (!result.data || result.data.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h5>No ${status} requests</h5>
+                        <p>There are no ${status} staff requests at this time.</p>
+                    </div>
+                `;
+            } else {
+                console.log(`📊 Found ${result.data.length} ${status} staff members`);
+                result.data.forEach(staff => {
+                    const card = createStaffCard(staff, status);
+                    container.appendChild(card);
+                });
+            }
+        } else {
+            throw new Error(result.message || 'Unknown error');
+        }
+    } catch (error) {
+        console.error(`❌ Error loading ${status} staff:`, error);
+        container.innerHTML = `
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>Error:</strong> ${error.message}
+            </div>
+        `;
+    }
+}
+
+function createStaffCard(staff, status) {
+    const card = document.createElement('div');
+    card.className = 'request-card';
+    
+    const actionButtons = status === 'pending' ? `
+        <div class="action-buttons">
+            <button class="btn-action btn-approve" onclick="updateStaffStatus(${staff.id}, 'approve')">
+                <i class="fas fa-check"></i>Approve
+            </button>
+            <button class="btn-action btn-deny" onclick="updateStaffStatus(${staff.id}, 'deny')">
+                <i class="fas fa-times"></i>Deny
+            </button>
+        </div>
+    ` : '';
+
+    const statusBadge = `
+        <div class="status-badge ${status}">
+            <i class="${getStatusIcon(status)}"></i>${status.charAt(0).toUpperCase() + status.slice(1)}
+        </div>
+    `;
+
+    const initials = `${staff.first_name.charAt(0)}${staff.last_name.charAt(0)}`;
+    
+    let idDocPath = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="180" height="140"%3E%3Crect fill="%23f8f9fa" width="180" height="140"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-family="Arial" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E';
+    
+    if (staff.id_document && staff.id_document.trim() !== '') {
+        const rawPath = staff.id_document.trim();
+        
+        console.log('📂 Staff ID:', staff.id, '| Name:', staff.first_name, staff.last_name);
+        console.log('   Raw DB path:', rawPath);
+        
+        if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+            idDocPath = rawPath;
+        } else {
+            // Handle different possible path formats
+            let cleanPath = rawPath;
+            
+            // If path starts with StaffAccount/, navigate up one level
+            if (cleanPath.startsWith('StaffAccount/')) {
+                cleanPath = cleanPath.replace('StaffAccount/', '');
+                idDocPath = '../StaffAccount/' + cleanPath;
+            }
+            // If path already includes uploads/, use it directly
+            else if (cleanPath.includes('uploads/')) {
+                // Remove any leading ./ or /
+                cleanPath = cleanPath.replace(/^[\.\/]+/, '');
+                idDocPath = '../StaffAccount/' + cleanPath;
+            }
+            // Default fallback
+            else {
+                cleanPath = cleanPath.replace(/^[\.\/]+/, '');
+                idDocPath = '../StaffAccount/' + cleanPath;
+            }
+        }
+        
+        console.log('   ✅ Final path:', idDocPath);
+        
+        // Test if image exists
+        const img = new Image();
+        img.onload = () => console.log('   ✅ Image EXISTS and loaded:', idDocPath);
+        img.onerror = () => console.error('   ❌ Image NOT FOUND:', idDocPath);
+        img.src = idDocPath;
+    }
+    
+    const fullName = `${staff.first_name} ${staff.middle_name || ''} ${staff.last_name}`.replace(/\s+/g, ' ').trim();
+    const escapedFullName = fullName.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+    const escapedIdPath = idDocPath.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+    
+    card.innerHTML = `
+        <div style="position: relative;">
+            ${statusBadge}
+            <div class="request-card-body">
+                <div class="request-info">
+                    <div class="request-header">
+                        <div class="user-avatar">${initials}</div>
+                        <div class="user-details">
+                            <h5>${fullName}</h5>
+                            <p class="user-role">${staff.role}</p>
+                        </div>
+                    </div>
+                    <div class="request-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>${staff.email}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="id-thumbnail-container">
+                    <img class="id-thumbnail" 
+                         src="${idDocPath}" 
+                         alt="ID Document"
+                         loading="eager"
+                         title="Click to view full size"
+                         onerror="console.error('❌ Failed to load:', this.src); this.onerror=null; this.src='../photos/default-id.png'; this.style.border='3px solid #dc3545';"
+                         onload="console.log('✅ Successfully loaded:', this.src); this.style.opacity='1';"
+                         onclick="openModal('${escapedIdPath}', '${escapedFullName} - ID Document')"
+                         style="opacity: 1; transition: opacity 0.3s ease; cursor: pointer;">
+                </div>
+                ${actionButtons}
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
+
+function getStatusIcon(status) {
+    switch(status) {
+        case 'pending': return 'fas fa-clock';
+        case 'approved': return 'fas fa-check-circle';
+        case 'denied': return 'fas fa-times-circle';
+        default: return 'fas fa-question-circle';
+    }
+}
+
+async function updateStaffStatus(staffId, action) {
+    if (!confirm(`Are you sure you want to ${action} this staff member?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('../update_staff_status.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `staff_id=${staffId}&action=${action}`
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            alert(`✅ Staff member ${action}d successfully`);
+            loadAllStaffRequests();
+        } else {
+            throw new Error(result.message || 'Unknown error');
+        }
+    } catch (error) {
+        console.error(`❌ Error updating staff status:`, error);
+        alert(`❌ Error: ${error.message}`);
+    }
+}
+
+// Initial load
+loadAllStaffRequests();
+  </script>
+</body>
+</html>

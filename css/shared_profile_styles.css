@@ -1,0 +1,301 @@
+/* Compact Profile Modal Styles - Made Larger */
+.modal-lg {
+    max-width: 900px;
+}
+
+.modal-content {
+    border-radius: 15px !important;
+    border: none !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+    max-height: 85vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem 2rem 0.75rem;
+}
+
+.modal-body {
+    padding: 1rem 2rem;
+    max-height: calc(85vh - 140px);
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 1rem 2rem 1.5rem;
+}
+
+/* Profile Picture Styles */
+.profile-upload-container {
+    margin-bottom: 1rem;
+}
+
+.profile-picture-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.profile-picture-wrapper:hover {
+    transform: scale(1.05);
+}
+
+.profile-preview-compact {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #8B4513;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.profile-overlay-compact {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(139, 69, 19, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.profile-upload-container:hover .profile-overlay-compact {
+    opacity: 1;
+}
+
+.profile-overlay-compact i {
+    color: white;
+    font-size: 1.4rem;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.cursor-pointer:hover {
+    color: #8B4513 !important;
+}
+
+/* Form Input Styles */
+.form-label-compact {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.profile-input {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    color: #495057;
+}
+
+.profile-input:focus {
+    border-color: #8B4513;
+    box-shadow: 0 0 0 0.2rem rgba(139, 69, 19, 0.15);
+    outline: none;
+}
+
+.profile-input-compact {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    color: #495057;
+    height: auto;
+}
+
+.profile-input-compact:focus {
+    border-color: #8B4513;
+    box-shadow: 0 0 0 0.2rem rgba(139, 69, 19, 0.15);
+    outline: none;
+}
+
+/* ID Document Styles */
+.id-upload-section {
+    position: relative;
+}
+
+.current-id-display-compact {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.id-preview-compact {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.id-preview-compact:hover {
+    transform: scale(1.05);
+    border-color: #8B4513;
+}
+
+/* Password Toggle Styles */
+.input-group .profile-input {
+    border-right: none;
+}
+
+.toggle-password-modern {
+    border-left: none;
+    background: transparent;
+    color: #6c757d;
+    border: 1px solid #e9ecef;
+    border-radius: 0 8px 8px 0;
+    transition: all 0.3s ease;
+}
+
+.toggle-password-modern:hover {
+    color: #8B4513;
+    background: rgba(139, 69, 19, 0.05);
+}
+
+.input-group .profile-input:focus + .toggle-password-modern {
+    border-color: #8B4513;
+}
+
+/* Button Styles */
+.btn-light-compact {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    color: #495057;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-light-compact:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #495057;
+    transform: translateY(-1px);
+}
+
+.btn-primary-compact {
+    background-color: #8B4513;
+    border: 1px solid #8B4513;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-compact:hover {
+    background-color: #7a3d11;
+    border-color: #7a3d11;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+}
+
+.btn-light-modern {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    color: #495057;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-light-modern:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #495057;
+    transform: translateY(-1px);
+}
+
+.btn-primary-modern {
+    background-color: #8B4513;
+    border: 1px solid #8B4513;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-modern:hover {
+    background-color: #7a3d11;
+    border-color: #7a3d11;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+}
+
+#forgotPasswordLink {
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+#forgotPasswordLink:hover {
+    color: #7a3d11 !important;
+    text-decoration: underline !important;
+}
+
+.row.g-2 {
+    row-gap: 0.75rem !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .modal-lg {
+        max-width: 95%;
+        margin: 0.5rem;
+    }
+    
+    .modal-content {
+        border-radius: 12px !important;
+        max-height: 90vh;
+    }
+    
+    .modal-body {
+        max-height: calc(90vh - 120px);
+        padding: 1rem 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .modal-lg {
+        max-width: 100%;
+        margin: 0.25rem;
+    }
+    
+    .modal-content {
+        border-radius: 10px !important;
+        max-height: 95vh;
+    }
+}
